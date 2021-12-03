@@ -1,14 +1,16 @@
-import os
+import os,sys
 import torch
 import time
 import multiprocessing
 import numpy as np
 from tqdm import tqdm
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from src.dpsr import DPSR
 
-data_path = 'data/ShapeNet' # path for ShapeNet from ONet
+data_path = '/mnt/raphael/ModelNet10/' # path for ShapeNet from ONet
 base = 'data' # output base directory
-dataset_name = 'shapenet_psr'
+dataset_name = 'modelnet_psr'
 multiprocess = True
 njobs = 8
 save_pointcloud = True
@@ -56,11 +58,12 @@ def process_one(obj):
 
 def main(c):
 
-    print('---------------------------------------')
-    print('Processing {} {}'.format(c, split))
-    print('---------------------------------------')
+
 
     for split in ['train', 'val', 'test']:
+        print('---------------------------------------')
+        print('Processing {} {}'.format(c, split))
+        print('---------------------------------------')
         fname = os.path.join(data_path, c, split+'.lst')
         with open(fname, 'r') as f:
             obj_list = f.read().splitlines() 
@@ -87,10 +90,14 @@ def main(c):
                 
 if __name__ == "__main__":
 
+
+
     classes = ['02691156', '02828884', '02933112', 
                '02958343', '03211117', '03001627',
                '03636649', '03691459', '04090263',
                '04256520', '04379243', '04401088', '04530566']
+
+    classes = os.listdir(data_path)
 
     
     t_start = time.time()
