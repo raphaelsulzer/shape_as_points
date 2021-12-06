@@ -4,16 +4,14 @@ import time
 import multiprocessing
 import numpy as np
 from tqdm import tqdm
+import shutil
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from src.dpsr import DPSR
 
 data_path = '/mnt/raphael/ModelNet10/' # path for ShapeNet from ONet
-base = 'data' # output base directory
-dataset_name = 'modelnet_psr'
-multiprocess = True
-njobs = 8
-save_pointcloud = True
+multiprocess = False
+njobs = 5
 save_psr_field = True
 resolution = 128
 zero_level = 0.0
@@ -24,15 +22,18 @@ dpsr = DPSR(res=(resolution, resolution, resolution), sig=0)
 
 def process_one(obj):
 
-    obj_name = obj.split('/')[-1]
-    c = obj.split('/')[-2]
 
-    # create new for the current object
-    out_path_cur = os.path.join(base, dataset_name, c)
-    out_path_cur_obj = os.path.join(out_path_cur, obj_name)
-    os.makedirs(out_path_cur_obj, exist_ok=True)
+    s = obj.split('/')
+    c = s[0]
+    id = s[1]
+    outpath = os.path.join(data_path,c,"sap",id)
 
-    gt_path = os.path.join(data_path, c, obj_name, 'pointcloud.npz')
+    if(os.path.isfile(os.path.join(outpath, 'psr.npz'))):
+        return
+
+    os.makedirs(outpath, exist_ok=True)
+
+    gt_path = os.path.join(data_path, c,"eval",id, 'pointcloud.npz')
     data = np.load(gt_path)
     points = data['points']
     normals = data['normals']
@@ -42,25 +43,25 @@ def process_one(obj):
     # to scale back during inference, we should:
     #! p = (p - 0.5) * padding
     
-    if save_pointcloud:
-        outdir = os.path.join(out_path_cur_obj, 'pointcloud.npz')
-        # np.savez(outdir, points=points, normals=normals)
-        np.savez(outdir, points=data['points'], normals=data['normals'])
-        # return
+    # if save_pointcloud:
+    #     outdir = os.path.join(out_path_cur_obj, 'pointcloud.npz')
+    #     # np.savez(outdir, points=points, normals=normals)
+    #     np.savez(outdir, points=data['points'], normals=data['normals'])
+    #     # return
     
     if save_psr_field:
         psr_gt = dpsr(torch.from_numpy(points.astype(np.float32))[None], 
                       torch.from_numpy(normals.astype(np.float32))[None]).squeeze().cpu().numpy().astype(np.float16)
 
-        outdir = os.path.join(out_path_cur_obj, 'psr.npz')
+        outdir = os.path.join(outpath, 'psr.npz')
         np.savez(outdir, psr=psr_gt)
+
+    a=5
     
 
 def main(c):
 
-
-
-    for split in ['train', 'val', 'test']:
+    for split in ['train','test']:
         print('---------------------------------------')
         print('Processing {} {}'.format(c, split))
         print('---------------------------------------')
@@ -90,16 +91,8 @@ def main(c):
                 
 if __name__ == "__main__":
 
-
-
-    classes = ['02691156', '02828884', '02933112', 
-               '02958343', '03211117', '03001627',
-               '03636649', '03691459', '04090263',
-               '04256520', '04379243', '04401088', '04530566']
-
     classes = os.listdir(data_path)
 
-    
     t_start = time.time()
     for c in classes:
         main(c)

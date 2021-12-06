@@ -122,7 +122,12 @@ class Shapes3dDataset(data.Dataset):
         model = self.models[idx]['model']
         c_idx = self.metadata[category]['idx']
 
-        model_path = os.path.join(self.dataset_folder, category, model)
+        # model_path = os.path.join(self.dataset_folder, category, model)
+        scan_conf = str(self.cfg['data']['scan'])
+        # if self.cfg['data']['dataset'] == 'Shapes3D':
+        #     model_path = os.path.join(self.dataset_folder, category, model)
+        # elif self.cfg['data']['dataset'] == 'ModelNet10':
+        #     model_path = os.path.join(self.dataset_folder, category, 'convonet', scan_conf, model)
         data = {}
 
         info = c_idx
@@ -133,17 +138,24 @@ class Shapes3dDataset(data.Dataset):
                 idx = 0
 
         for field_name, field in self.fields.items():
-            try:
-                field_data = field.load(model_path, idx, info)
-            except Exception:
-                if self.no_except:
-                    logger.warn(
-                        'Error occured when loading field %s of model %s'
-                        % (field_name, model)
-                    )
-                    return None
-                else:
-                    raise
+            # print(field,field_name)
+            if(field_name == "gt_points"):
+                model_path = os.path.join(self.dataset_folder, category, "eval", model)
+            elif(field_name == "gt_psr"):
+                model_path = os.path.join(self.dataset_folder, category, "sap", model)
+            else:
+                model_path = os.path.join(self.dataset_folder, category, "convonet", scan_conf, model)
+            # try:
+            field_data = field.load(model_path, idx, info)
+            # except Exception:
+            #     if self.no_except:
+            #         logger.warn(
+            #             'Error occured when loading field %s of model %s'
+            #             % (field_name, model)
+            #         )
+            #         return None
+            #     else:
+            #         raise
 
             if isinstance(field_data, dict):
                 for k, v in field_data.items():
