@@ -1,4 +1,5 @@
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
@@ -6,7 +7,6 @@ os.chdir(dname)
 
 import torch
 import torch.optim as optim
-import open3d as o3d
 
 import numpy as np; np.set_printoptions(precision=4)
 import shutil, argparse, time
@@ -21,6 +21,7 @@ AverageMeter, load_model_manual
 
 
 def main():
+
     parser = argparse.ArgumentParser(description='MNIST toy experiment')
     parser.add_argument('config', type=str, help='Path to config file.')
     parser.add_argument('--no_cuda', action='store_true', default=False,
@@ -34,6 +35,7 @@ def main():
     input_type = cfg['data']['input_type']
     batch_size = cfg['train']['batch_size']
     model_selection_metric = cfg['train']['model_selection_metric']
+
 
     # PYTORCH VERSION > 1.0.0
     assert(float(torch.__version__.split('.')[-3]) > 0)

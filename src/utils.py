@@ -498,6 +498,18 @@ def export_mesh(name, v, f):
     mesh.triangles = o3d.utility.Vector3iVector(f)
     o3d.io.write_triangle_mesh(name, mesh)
 
+def create_mesh(name, v, f):
+    if len(v.shape) > 2:
+        v, f = v[0], f[0]
+    if isinstance(v, torch.Tensor):
+        v = v.detach().cpu().numpy()
+        f = f.detach().cpu().numpy()
+    mesh = o3d.geometry.TriangleMesh()
+    mesh.vertices = o3d.utility.Vector3dVector(v)
+    mesh.triangles = o3d.utility.Vector3iVector(f)
+    return mesh
+
+
 def scale2onet(p, scale=1.2):
     '''
     Scale the point cloud from SAP to ONet range
