@@ -7,7 +7,7 @@ import pandas as pd
 from src.data import collate_remove_none, collate_stack_together, worker_init_fn
 from src.training import Trainer
 from src.model import Encode2Points
-from src.data import PointCloudField, IndexField, Shapes3dDataset
+from src.data import PointCloudField, PointsField, IndexField, Shapes3dDataset
 from src.utils import load_config, load_pointcloud
 from src.eval import MeshEvaluator
 from tqdm import tqdm

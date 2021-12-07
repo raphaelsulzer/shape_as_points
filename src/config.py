@@ -133,10 +133,18 @@ def get_data_fields(mode, cfg):
         transform = data.SubsamplePointcloud(100000)
     else:
         transform = data.SubsamplePointcloud(cfg['data']['num_gt_points'])
+
+    if (mode in ('val', 'test')):
+        data_name = cfg['data']['points_iou_file']
+        fields['occupancies'] = data.PointsField(data_name,
+                             transform=transform, multi_files=cfg['data']['multi_files'])
     
     data_name = cfg['data']['pointcloud_file']
     fields['gt_points'] = data.PointCloudField(data_name, 
                 transform=transform, data_type=data_type, multi_files=cfg['data']['multi_files'])
+    fields['gt_points'] = data.PointCloudField(data_name,
+                transform=transform, data_type=data_type, multi_files=cfg['data']['multi_files'])
+
     if data_type == 'psr_full':
         if mode != 'test':
             fields['gt_psr'] = data.FullPSRField(multi_files=cfg['data']['multi_files'])

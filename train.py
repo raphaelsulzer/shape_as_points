@@ -8,10 +8,13 @@ os.chdir(dname)
 import torch
 import torch.optim as optim
 
+import pandas as pd
+
 import numpy as np; np.set_printoptions(precision=4)
 import shutil, argparse, time
 from torch.utils.tensorboard import SummaryWriter
 
+from tqdm import tqdm
 from src import config
 from src.data import collate_remove_none, collate_stack_together, worker_init_fn
 from src.training import Trainer
@@ -60,7 +63,6 @@ def main():
     inputs = None
     train_dataset = config.get_dataset('train', cfg)
     val_dataset = config.get_dataset('val', cfg)
-    vis_dataset = config.get_dataset('vis', cfg)
 
     
     collate_fn = collate_remove_none
@@ -73,11 +75,6 @@ def main():
     val_loader = torch.utils.data.DataLoader(
         val_dataset, batch_size=1, num_workers=cfg['train']['n_workers_val'], shuffle=False,
     collate_fn=collate_remove_none,
-    worker_init_fn=worker_init_fn)
-
-    vis_loader = torch.utils.data.DataLoader(
-        vis_dataset, batch_size=1, num_workers=cfg['train']['n_workers_val'], shuffle=False,
-    collate_fn=collate_fn,
     worker_init_fn=worker_init_fn)
     
     if torch.cuda.device_count() > 1:
@@ -114,19 +111,32 @@ def main():
     trainer = Trainer(cfg, optimizer, device=device)
     runtime = {}
     runtime['all'] = AverageMeter()
-    
+
+
+    best_iou = 0.0
+    best_epoch = 0
+
+    # make an empty results file
+
+    # create the results df
+    cols = ['iteration', 'epoch','train_loss', 'test_loss', 'test_best_loss', 'test_iou', 'test_best_iou']
+    results_df = pd.DataFrame(columns=cols)
+    os.makedirs(os.path.join(cfg['train']['out_dir'],"metrics"),exist_ok=True)
+
     # training loop
     for epoch in range(start_epoch+1, cfg['train']['total_epochs']+1):
 
         for batch in train_loader:
             it += 1
-            
+
             start = time.time()
             loss, loss_each = trainer.train_step(inputs, batch, model)
 
             # measure elapsed time
             end = time.time()
             runtime['all'].update(end - start)
+
+
 
             if it % cfg['train']['print_every'] == 0:
                 log_text = ('[Epoch %02d] it=%d, loss=%.4f') %(epoch, it, loss)
@@ -140,15 +150,21 @@ def main():
                 log_text += (' time=%.3f / %.2f') % (runtime['all'].val, runtime['all'].sum)
                 logger.info(log_text)
 
+
+
+
             if (it>0)& (it % cfg['train']['visualize_every'] == 0):
-                for i, batch_vis in enumerate(vis_loader):
-                    trainer.save(model, batch_vis, it, i)
+                for i, batch_val in enumerate(val_loader):
+                    trainer.save(model, batch_val, it, i)
                     if i >= 4:
                         break
                 logger.info('Saved mesh and pointcloud')
 
             # run validation
             if it > 0 and (it % cfg['train']['validate_every']) == 0:
+
+                row = dict.fromkeys(list(results_df.columns))
+
                 eval_dict = trainer.evaluate(val_loader, model)
                 metric_val = eval_dict[model_selection_metric]
                 logger.info('Validation metric (%s): %.4f'
@@ -166,19 +182,55 @@ def main():
                     state['state_dict'] = model.state_dict()
                     torch.save(state, os.path.join(cfg['train']['out_dir'], 'model_best.pt'))
 
+                mean_iou = []
+                for i, batch_val in enumerate(tqdm(val_loader,ncols=50)):
+                    mean_iou.append(trainer.generate_and_evaluate(model, batch_val))
+
+                mean_iou = np.array(mean_iou).mean()
+                if(mean_iou > best_iou):
+                    best_iou = mean_iou
+                    best_epoch = epoch
+                    state = {'epoch': epoch,
+                             'it': it,
+                             'loss_val_best': metric_val_best,
+                             'iou_val_best': best_iou}
+                    state['state_dict'] = model.state_dict()
+                    torch.save(state, os.path.join(os.path.join(cfg['train']['dir_model'],'model_best.pt')))
+
+                row["iteration"] = it
+                row["epoch"] = epoch
+                row["train_loss"] = loss
+                row["test_loss"] = metric_val
+                row["test_best_loss"] = metric_val_best
+                row["test_iou"] = mean_iou
+                row["test_best_iou"] = best_iou
+                ### write metrics to file
+                results_df = results_df.append(row, ignore_index=True)
+                results_file = os.path.join(os.path.join(cfg['train']['out_dir'],"metrics","results.csv"))
+                results_df.to_csv(results_file, index=False)
+
+                print(row)
+
+
+
+
             # save checkpoint
             if (epoch > 0) & (it % cfg['train']['checkpoint_every'] == 0):
                 state = {'epoch': epoch,
                          'it': it,
-                         'loss_val_best': metric_val_best}
+                         'loss_val_best': metric_val_best,
+                         'iou_val_best': best_iou}
                 pcl = None
                 state['state_dict'] = model.state_dict()
-                
                 torch.save(state, os.path.join(cfg['train']['out_dir'], 'model.pt'))
 
                 if (it % cfg['train']['backup_every'] == 0):
                     torch.save(state, os.path.join(cfg['train']['dir_model'], '%04d' % it + '.pt'))
                     logger.info("Backup model at iteration %d" % it)
+
+                    results_file = os.path.join(os.path.join(cfg['train']['out_dir'], "metrics", "results_" + str(it) + ".csv"))
+                    results_df.to_csv(results_file, index=False)
+
                 logger.info("Save new model at iteration %d" % it)
 
             done=time.time()

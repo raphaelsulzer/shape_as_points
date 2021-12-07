@@ -8,7 +8,8 @@ from tqdm import tqdm
 
 from src.dpsr import DPSR
 from src.utils import grid_interp, export_pointcloud, export_mesh, \
-                      mc_from_psr, scale2onet, GaussianSmoothing
+                      mc_from_psr, scale2onet, GaussianSmoothing, generate_mesh, compute_iou
+from src.libmesh import check_mesh_contains
 from pytorch3d.ops.knn import knn_gather, knn_points
 from pytorch3d.loss import chamfer_distance
 from pdb import set_trace as st
@@ -167,7 +168,39 @@ class Trainer(object):
                     v, f, _ = mc_from_psr(psr_gt,
                             zero_level=self.cfg['data']['zero_level'])
                 export_mesh(os.path.join(dir_mesh, '{:04d}_{:01d}_oracle.ply'.format(epoch, id)), scale2onet(v), f)
-        
+
+
+
+    def generate_and_evaluate(self,model,data):
+
+        p = data.get('inputs').to(self.device)
+
+        model.eval()
+        with torch.no_grad():
+            points, normals = model(p)
+
+        psr_grid = self.dpsr(points, normals)
+        # psr_grid = torch.tanh(psr_grid)
+        with torch.no_grad():
+            v, f, _ = mc_from_psr(psr_grid,
+                                  zero_level=self.cfg['data']['zero_level'])
+
+        recon_mesh = generate_mesh(scale2onet(v),f)
+
+        occ_points = data.get('occupancies.occ_points').squeeze().detach().cpu().numpy()
+        occ_tgt = data.get('occupancies.occ').squeeze().detach().cpu().numpy()
+
+
+        if len(recon_mesh.vertices) != 0 and len(recon_mesh.faces) != 0:
+            occ = check_mesh_contains(recon_mesh, occ_points)
+            return compute_iou(occ, occ_tgt)
+        else:
+            return 0.
+
+
+
+
+
     def evaluate(self, val_loader, model):
         ''' Performs an evaluation.
         Args:

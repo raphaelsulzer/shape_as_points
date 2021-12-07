@@ -124,10 +124,6 @@ class Shapes3dDataset(data.Dataset):
 
         # model_path = os.path.join(self.dataset_folder, category, model)
         scan_conf = str(self.cfg['data']['scan'])
-        # if self.cfg['data']['dataset'] == 'Shapes3D':
-        #     model_path = os.path.join(self.dataset_folder, category, model)
-        # elif self.cfg['data']['dataset'] == 'ModelNet10':
-        #     model_path = os.path.join(self.dataset_folder, category, 'convonet', scan_conf, model)
         data = {}
 
         info = c_idx
@@ -139,7 +135,7 @@ class Shapes3dDataset(data.Dataset):
 
         for field_name, field in self.fields.items():
             # print(field,field_name)
-            if(field_name == "gt_points"):
+            if(field_name == "gt_points" or field_name == "occupancies"):
                 model_path = os.path.join(self.dataset_folder, category, "eval", model)
             elif(field_name == "gt_psr"):
                 model_path = os.path.join(self.dataset_folder, category, "sap", model)

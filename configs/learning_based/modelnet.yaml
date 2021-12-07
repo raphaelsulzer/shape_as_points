@@ -1,5 +1,5 @@
 data:
-  class: ["toilet"]
+  class: null
   dataset: ModelNet10
   scan: 43
   data_type: psr_full
@@ -9,6 +9,7 @@ data:
   num_offset: 7
   pointcloud_n: 3000
   pointcloud_noise: 0.0
+  pointcloud_outlier_ratio: 0
   train_split: train
   val_split: test
   test_split: test
@@ -42,12 +43,12 @@ train:
   out_dir: /mnt/raphael/ModelNet10_out/sap/scan4/conventional
   w_psr: 1
   model_selection_metric: psr_l2
-  print_every: 10
-  checkpoint_every: 20
-  validate_every: 50
-  backup_every: 1000
+  print_every: 100
+  checkpoint_every: 1000
+  validate_every: 1000
+  backup_every: 10000
   total_epochs: 400000
-  visualize_every: 500
+  visualize_every: 50000
   exp_pcl: True
   exp_mesh: True
   n_workers: 0
