@@ -91,7 +91,10 @@ class Encode2Points(nn.Module):
         
         encoder = cfg['model']['encoder']
         decoder = cfg['model']['decoder']
-        dim = cfg['data']['dim'] # input dim
+        dim = cfg['data']['dim']
+        p_dim = dim + cfg['sensor']['ident_dim'] + 3 * int(cfg['data']['with_sensor']) + 3 * int(
+            cfg['data']['with_normal']) + 3 * int(cfg['data']['with_gt_normal'])
+        # input dim
         c_dim = cfg['model']['c_dim']
         encoder_kwargs = cfg['model']['encoder_kwargs']
         if encoder_kwargs == None:
@@ -120,7 +123,7 @@ class Encode2Points(nn.Module):
             local_mapping = map2local(unit_size)
 
         self.encoder = encoder_dict[encoder](
-            dim=dim, c_dim=c_dim, map2local=local_mapping,
+            dim=p_dim, c_dim=c_dim, map2local=local_mapping,
             **encoder_kwargs
         )
 
@@ -150,14 +153,14 @@ class Encode2Points(nn.Module):
         mask = None
         
         batch_size = p.size(0)
-        points = p.clone()
+        points = p.clone()[:,:,:3]
 
         # encode the input point cloud to a feature volume
         t0 = time.perf_counter()
         c = self.encoder(p)
         t1 = time.perf_counter()
         if self.predict_offset:
-            offset = self.decoder_offset(p, c)
+            offset = self.decoder_offset(p[:,:,:3], c)
             # more than one offset is predicted per-point
             if self.num_offset > 1:
                 points = points.repeat(1, 1, self.num_offset).reshape(batch_size, -1, 3)

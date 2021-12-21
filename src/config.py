@@ -112,7 +112,7 @@ def get_inputs_field(mode, cfg):
         data_type = cfg['data']['data_type']
         inputs_field = data.PointCloudField(
             cfg['data']['pointcloud_file'], data_type, transform,
-            multi_files= cfg['data']['multi_files']
+            multi_files= cfg['data']['multi_files'], sensor_options=cfg['sensor']
         )    
     else:
         raise ValueError(

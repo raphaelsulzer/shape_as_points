@@ -67,13 +67,17 @@ class PointCloudField(Field):
         transform (list): list of transformations applied to data points
         multi_files (callable): number of files
     '''
-    def __init__(self, file_name, data_type=None, transform=None, multi_files=None, padding=0.1, scale=1.2):
+    def __init__(self, file_name, data_type=None, transform=None, multi_files=None, padding=0.1, scale=1.2, sensor_options=None):
         self.file_name = file_name
         self.data_type = data_type # to make sure the range of input is correct
         self.transform = transform
         self.multi_files = multi_files
         self.padding = padding
         self.scale = scale
+        self.sensor_options = sensor_options
+
+    def add_sensor_info(self,pointcloud_dict):
+        pass
 
     def load(self, model_path, idx, category):
         ''' Loads the data point.
@@ -94,6 +98,24 @@ class PointCloudField(Field):
 
         points = pointcloud_dict['points'].astype(np.float32)
         normals = pointcloud_dict['normals'].astype(np.float32)
+
+        if(self.sensor_options):
+            if (self.sensor_options["mode"] == "sensor_vec_norm"):
+                sensors = pointcloud_dict['sensors'].astype(np.float32)
+                sensors = sensors - points
+                sensors = sensors / np.linalg.norm(sensors, axis=1)[:, np.newaxis]
+                points = np.concatenate((points,sensors),axis=1)
+
+
+        # if(self.sensor_options["mode"] == "sensor_vec_norm"):
+        #     points = pointcloud_dict['points'].astype(np.float32)[:3000,:3]
+        #     normals = pointcloud_dict['normals'].astype(np.float32)[:3000]
+        #     # gt_normals = pointcloud_dict['gt_normals'].astype(np.float32)[:3000]
+        #
+        #
+        #     sensors = pointcloud_dict['sensors'].astype(np.float32)[:3000]
+        #     sensors = sensors - points
+        #     sensors = sensors / np.linalg.norm(sensors, axis=1)[:, np.newaxis]
         
         data = {
             None: points,

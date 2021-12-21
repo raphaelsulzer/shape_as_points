@@ -113,15 +113,12 @@ def main():
     runtime['all'] = AverageMeter()
 
 
-    best_iou = 0.0
-    best_epoch = 0
-
-    # make an empty results file
 
     # create the results df
     cols = ['iteration', 'epoch','train_loss', 'test_loss', 'test_best_loss', 'test_iou', 'test_best_iou']
     results_df = pd.DataFrame(columns=cols)
     os.makedirs(os.path.join(cfg['train']['out_dir'],"metrics"),exist_ok=True)
+    best_iou = 0.0
 
     # training loop
     for epoch in range(start_epoch+1, cfg['train']['total_epochs']+1):

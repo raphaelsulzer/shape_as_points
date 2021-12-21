@@ -3,7 +3,7 @@ data:
   dataset: ModelNet10
   scan: 43
   dim: 3
-  with_sensor: false
+  with_sensor: true
   with_normal: false
   with_gt_normal: false
   data_type: psr_full
@@ -18,7 +18,7 @@ data:
   val_split: test
   test_split: test
 sensor:
-  mode: null   # uniform sampling at mean_neighborhood*[-2 -1 1 2] + 1 non-uniform outside sample per point = closest sample point of any other LOS
+  mode: sensor_vec_norm   # uniform sampling at mean_neighborhood*[-2 -1 1 2] + 1 non-uniform outside sample per point = closest sample point of any other LOS
   point_to: sensor
   steps: [ -1, 0.5, 0.5, 1 ]
   sampling: non-uniform
@@ -51,15 +51,15 @@ model:
 train:
   batch_size: 16
   lr: 5e-4
-  out_dir: /mnt/raphael/ModelNet10_out/sap/scan43/conventional
+  out_dir: /mnt/raphael/ModelNet10_out/sap/scan43/debug
   w_psr: 1
   model_selection_metric: psr_l2
-  print_every: 100
-  checkpoint_every: 1000
-  validate_every: 1000
-  backup_every: 10000
+  print_every: 10
+  checkpoint_every: 10
+  validate_every: 10
+  backup_every: 10
   total_epochs: 400000
-  visualize_every: 500000
+  visualize_every: 1000
   exp_pcl: True
   exp_mesh: True
   n_workers: 0
