@@ -9,6 +9,7 @@ data:
   data_type: psr_full
   input_type: pointcloud
   path: /mnt/raphael/ModelNet10
+#  path: /home/rsulzer/data/ModelNet10
   num_gt_points: 10000
   num_offset: 7
   pointcloud_n: 3000
@@ -20,8 +21,8 @@ data:
 sensor:
   mode: null   # uniform sampling at mean_neighborhood*[-2 -1 1 2] + 1 non-uniform outside sample per point = closest sample point of any other LOS
   point_to: sensor
-  steps: [ -1, 0.5, 0.5, 1 ]
-  sampling: non-uniform
+  steps: [ -1, 1 ]
+  sampling: uniform
   factor: neighborhood # or neighborhood
   ident_dim: 0
 model:
@@ -49,9 +50,11 @@ model:
     sample_mode: bilinear # bilinear / nearest
     hidden_size: 32
 train:
-  batch_size: 16
+  batch_size: 8
   lr: 5e-4
+#  out_dir: /home/rsulzer/data/ModelNet10_out/sap/scan43/conventional
   out_dir: /mnt/raphael/ModelNet10_out/sap/scan43/conventional
+  load_model: model_best
   w_psr: 1
   model_selection_metric: psr_l2
   print_every: 100
@@ -62,10 +65,18 @@ train:
   visualize_every: 500000
   exp_pcl: True
   exp_mesh: True
-  n_workers: 0
-  n_workers_val: 0
+  n_workers: 3
+  n_workers_val: 3
 generation:
+  batch_size: 100000
   exp_gt: False
-  exp_input: True
+  exp_oracle: False
+  exp_input: False
+  vis_n_outputs: 1000
+  generate_mesh: True
+  generate_pointcloud: False
+  generation_dir: generation
+  copy_input: false
+  use_sampling: false
   psr_resolution: 128
   psr_sigma: 2

@@ -36,14 +36,14 @@ class Trainer(object):
                             cfg['model']['grid_res'], 
                             cfg['model']['grid_res']), 
                         sig=cfg['model']['psr_sigma'])
-        if torch.cuda.device_count() > 1:    
-            self.dpsr = torch.nn.DataParallel(self.dpsr) # parallell DPSR
+        # if torch.cuda.device_count() > 1:
+        #     self.dpsr = torch.nn.DataParallel(self.dpsr) # parallell DPSR
         self.dpsr = self.dpsr.to(device)
 
         if cfg['train']['gauss_weight']>0.:
             self.gauss_smooth = GaussianSmoothing(1, 7, 2).to(device)
         
-    def train_step(self, inputs, data, model):
+    def train_step(self, data, model):
         ''' Performs a training step.
 
         Args:
@@ -51,7 +51,10 @@ class Trainer(object):
         '''
         self.optimizer.zero_grad()
         p = data.get('inputs').to(self.device)
-        
+        if self.cfg['data']['with_sensor']:
+            s = data.get('inputs.sensors').to(self.device)
+            p = torch.cat((p, s), axis=2)
+
         out = model(p)
         
         points, normals = out
@@ -174,6 +177,10 @@ class Trainer(object):
     def generate_and_evaluate(self,model,data):
 
         p = data.get('inputs').to(self.device)
+        if self.cfg['data']['with_sensor']:
+            s = data.get('inputs.sensors').to(self.device)
+            p = torch.cat((p, s), axis=2)
+
 
         model.eval()
         with torch.no_grad():
@@ -226,6 +233,10 @@ class Trainer(object):
         eval_dict = {}
 
         p = data.get('inputs').to(self.device)
+        if self.cfg['data']['with_sensor']:
+            s = data.get('inputs.sensors').to(self.device)
+            p = torch.cat((p, s), axis=2)
+
         psr_gt = data.get('gt_psr').to(self.device)
         
         with torch.no_grad():

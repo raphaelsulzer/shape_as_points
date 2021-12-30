@@ -9,6 +9,13 @@
           </mappings>
         </serverdata>
       </paths>
+      <paths name="rsulzer@localhost:7000">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/rsulzer/python/shape_as_points" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
     </serverData>
     <option name="myAutoUpload" value="ALWAYS" />
   </component>

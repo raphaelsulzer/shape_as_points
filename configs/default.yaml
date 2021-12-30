@@ -94,6 +94,7 @@ generation:
   exp_gt: False
   exp_oracle: false
   exp_input: False
+  exp_mesh: True
   vis_n_outputs: 10
   generate_mesh: true
   generate_pointcloud: true

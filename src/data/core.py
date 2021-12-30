@@ -63,6 +63,8 @@ class Shapes3dDataset(data.Dataset):
             categories = [c for c in categories
                           if os.path.isdir(os.path.join(dataset_folder, c))]
 
+        if categories is not 'x':
+            if 'x' in categories: categories.remove('x')
         # Read metadata file
         metadata_file = os.path.join(dataset_folder, 'metadata.yaml')
 
@@ -71,7 +73,7 @@ class Shapes3dDataset(data.Dataset):
                 self.metadata = yaml.load(f, Loader=yaml.Loader)
         else:
             self.metadata = {
-                c: {'id': c, 'name': 'n/a'} for c in categories
+                c: {'id': c, 'name': c} for c in categories
             } 
         
         # Set index
@@ -136,11 +138,18 @@ class Shapes3dDataset(data.Dataset):
         for field_name, field in self.fields.items():
             # print(field,field_name)
             if(field_name == "gt_points" or field_name == "occupancies"):
-                model_path = os.path.join(self.dataset_folder, category, "eval", model)
+                if(self.cfg["data"]["dataset"] == "ModelNet10"):
+                    model_path = os.path.join(self.dataset_folder, category, "eval", model)
+                else:
+                    model_path = os.path.join(self.dataset_folder, category, model, "eval")
             elif(field_name == "gt_psr"):
                 model_path = os.path.join(self.dataset_folder, category, "sap", model)
             else:
-                model_path = os.path.join(self.dataset_folder, category, "convonet", scan_conf, model)
+                if(self.cfg["data"]["dataset"] == "ModelNet10"):
+                    model_path = os.path.join(self.dataset_folder, category, "convonet", scan_conf, model)
+                else:
+                    model_path = os.path.join(self.dataset_folder, category, model, "scan")
+
             # try:
             field_data = field.load(model_path, idx, info)
             # except Exception:

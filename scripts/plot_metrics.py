@@ -2,8 +2,10 @@ import matplotlib.pyplot as plt
 import os
 import pandas as pd
 import numpy as np
+import subprocess
 
-data_path = "/mnt/raphael/ModelNet10_out/sap/scan4"
+data_path = "/mnt/raphael/ModelNet10_out/sap/scan43"
+# data_path = "/home/rsulzer/data/ModelNet10_out/sap/scan43"
 
 # methods =["sensor_2_2", "mean_neighborhood_one", "mean_neighborhood_uniform_4", "scan41", "scan421", "scan421_normal"]
 ## normals
@@ -15,10 +17,10 @@ data_path = "/mnt/raphael/ModelNet10_out/sap/scan4"
 
 ## best
 
-a = 0
-b = 100000000
+a = 30
+b = 200
 
-methods = ["conventional"]
+methods = ["conventional","sensor_vec_norm","norm+"]
 
 plt.figure("Loss")
 plt.figure("IoU")
@@ -39,13 +41,12 @@ for i,m in enumerate(methods):
     # loss_cl = loss_cl[its]
     # iou = iou[its]
     its = df["iteration"].values
-    a = 0
-    its = its[a:]
-    loss_train = loss_train[a:]
-    loss_test = loss_test[a:]
+    its = its[a:b]
+    loss_train = loss_train[a:b]
+    loss_test = loss_test[a:b]
     # loss_reg = loss_reg[a:]
     # loss_cl = loss_cl[a:]
-    iou = iou[a:]
+    iou = iou[a:b]
 
     plt.figure("Loss")
     # plt.plot(its,train_loss_cl,':',color=colors[i])
@@ -58,9 +59,9 @@ for i,m in enumerate(methods):
 
 plt.figure("Loss")
 plt.grid()
-l = ["train_loss","test_loss"]
-legend = ["conventional_"+l[0],"conventional_"+l[1]]
-plt.legend(legend)
+# l = ["train_loss","test_loss"]
+# legend = ["conventional_"+l[0],"conventional_"+l[1]]
+plt.legend(methods)
 plt.xlabel("Training Iterations")
 plt.ylabel("Loss")
 plt.savefig(os.path.join(data_path, 'train_loss.png'),dpi=200)
@@ -68,7 +69,16 @@ plt.savefig(os.path.join(data_path, 'train_loss.png'),dpi=200)
 plt.figure("IoU")
 plt.grid()
 # plt.legend(methods)
-plt.legend(["conventional","sensor_vec","sensor_aux_grid","sensor_aux_uniform"])
+# plt.legend(["conventional","sensor_vec","sensor_aux_grid","sensor_aux_uniform"])
+plt.legend(methods)
 plt.xlabel("Training Iterations")
 plt.ylabel("Validation IoU")
 plt.savefig(os.path.join(data_path, 'validation_iou.png'),dpi=200)
+
+# scp the plots
+# command = ["scp","biom:",os.path.join(data_path, 'train_loss.png'),"/home/adminlocal/PhD/data/ModelNet/sap"]
+# p = subprocess.Popen(command)
+# p.wait()
+# command = ["scp","biom:",os.path.join(data_path, 'validation_iou.png'),"/home/adminlocal/PhD/data/ModelNet/sap"]
+# p = subprocess.Popen(command)
+# p.wait()

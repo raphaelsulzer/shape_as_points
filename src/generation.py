@@ -21,7 +21,7 @@ class Generator3D(object):
 
     def __init__(self, model, points_batch_size=100000,
                  threshold=0.5, device=None, padding=0.1, 
-                 sample=False, input_type = None, dpsr=None, psr_tanh=True):
+                 sample=False, input_type = None, dpsr=None, psr_tanh=True, cfg=None):
         self.model = model.to(device)
         self.points_batch_size = points_batch_size
         self.threshold = threshold
@@ -31,7 +31,8 @@ class Generator3D(object):
         self.sample = sample
         self.dpsr = dpsr
         self.psr_tanh = psr_tanh
-        
+        self.cfg = cfg
+
     def generate_mesh(self, data, return_stats=True):
         ''' Generates the output mesh.
 
@@ -44,6 +45,9 @@ class Generator3D(object):
         stats_dict = {}
 
         p = data.get('inputs', torch.empty(1, 0)).to(device)
+        if self.cfg['data']['with_sensor']:
+            s = data.get('inputs.sensors').to(self.device)
+            p = torch.cat((p, s), axis=2)
 
         t0 = time.time()
         points, normals = self.model(p)

@@ -7,6 +7,7 @@ import numpy as np
 import trimesh
 from src.data.core import Field
 from pdb import set_trace as st
+from src.data.add_sensor import *
 
 
 class IndexField(Field):
@@ -67,7 +68,7 @@ class PointCloudField(Field):
         transform (list): list of transformations applied to data points
         multi_files (callable): number of files
     '''
-    def __init__(self, file_name, data_type=None, transform=None, multi_files=None, padding=0.1, scale=1.2, sensor_options=None):
+    def __init__(self, file_name, data_type=None, transform=None, multi_files=None, padding=0.1, scale=1.2, sensor_options=None, workers=None):
         self.file_name = file_name
         self.data_type = data_type # to make sure the range of input is correct
         self.transform = transform
@@ -75,9 +76,8 @@ class PointCloudField(Field):
         self.padding = padding
         self.scale = scale
         self.sensor_options = sensor_options
+        self.workers = workers
 
-    def add_sensor_info(self,pointcloud_dict):
-        pass
 
     def load(self, model_path, idx, category):
         ''' Loads the data point.
@@ -88,6 +88,7 @@ class PointCloudField(Field):
             category (int): index of category
         '''
         if self.multi_files is None:
+
             file_path = os.path.join(model_path, self.file_name)
         else:
             # num = np.random.randint(self.multi_files)
@@ -96,37 +97,30 @@ class PointCloudField(Field):
 
         pointcloud_dict = np.load(file_path)
 
-        points = pointcloud_dict['points'].astype(np.float32)
-        normals = pointcloud_dict['normals'].astype(np.float32)
+        if (self.sensor_options): # sensor_options is only set for input field (not for gt_points field)
+            asc = AddSensor(self.sensor_options,self.workers)
+            data = asc.add(pointcloud_dict)
+        else:
+            data = {
+                None: pointcloud_dict['points'].astype(np.float32),
+                'normals': pointcloud_dict['normals'].astype(np.float32)
+            }
 
-        if(self.sensor_options):
-            if (self.sensor_options["mode"] == "sensor_vec_norm"):
-                sensors = pointcloud_dict['sensors'].astype(np.float32)
-                sensors = sensors - points
-                sensors = sensors / np.linalg.norm(sensors, axis=1)[:, np.newaxis]
-                points = np.concatenate((points,sensors),axis=1)
+        # R=np.array([[-1, 0, 0], [0, 0, 1], [0, 1, 0]],dtype=np.float32)
+        # data[None][:,:3]=np.matmul(data[None][:,:3], R)
+        # data['normals']=np.matmul(data["normals"],R)
 
 
-        # if(self.sensor_options["mode"] == "sensor_vec_norm"):
-        #     points = pointcloud_dict['points'].astype(np.float32)[:3000,:3]
-        #     normals = pointcloud_dict['normals'].astype(np.float32)[:3000]
-        #     # gt_normals = pointcloud_dict['gt_normals'].astype(np.float32)[:3000]
-        #
-        #
-        #     sensors = pointcloud_dict['sensors'].astype(np.float32)[:3000]
-        #     sensors = sensors - points
-        #     sensors = sensors / np.linalg.norm(sensors, axis=1)[:, np.newaxis]
-        
-        data = {
-            None: points,
-            'normals': normals,
-        }
         if self.transform is not None:
             data = self.transform(data)
         
         if self.data_type == 'psr_full':
             # scale the point cloud to the range of (0, 1)
-            data[None] = data[None] / self.scale + 0.5
+            data[None][:,:3] = data[None][:,:3] / self.scale + 0.5
+        #     TODO: be sure that I do not have to do this for the sensor vector
+        #  in doubt, I could do it to the sensor position for sure
+
+
 
         return data
 
@@ -155,7 +149,7 @@ class PointsField(Field):
         multi_files (callable): number of files
 
     '''
-    def __init__(self, file_name, transform=None, unpackbits=True, multi_files=None):
+    def __init__(self, file_name, transform=None, unpackbits=True, multi_files=None, workers=None):
         self.file_name = file_name
         self.transform = transform
         self.unpackbits = unpackbits
@@ -177,6 +171,10 @@ class PointsField(Field):
 
         points_dict = np.load(file_path)
         points = points_dict['points']
+
+        # R=np.array([[-1, 0, 0], [0, 0, 1], [0, 1, 0]],dtype=np.float32)
+        # points=np.matmul(points,R)
+
         # Break symmetry if given in float16:
         if points.dtype == np.float16:
             points = points.astype(np.float32)

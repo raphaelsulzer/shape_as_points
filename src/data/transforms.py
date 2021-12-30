@@ -82,5 +82,9 @@ class SubsamplePointcloud(object):
         if 'normals' in data.keys():
             normals = data['normals']
             data_out['normals'] = normals[indices, :]
+        if('gt_normals') in data:
+            data_out['gt_normals'] = data['gt_normals'][indices, :]
+        if('sensors') in data:
+            data_out['sensors'] = data['sensors'][indices, :]
 
         return data_out

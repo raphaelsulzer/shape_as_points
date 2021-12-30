@@ -8,22 +8,24 @@ data:
   with_gt_normal: false
   data_type: psr_full
   input_type: pointcloud
-  path: /mnt/raphael/ModelNet10
+  path: /home/rsulzer/data/ModelNet10
+#  path: /mnt/raphael/ModelNet10
   num_gt_points: 10000
   num_offset: 7
-  pointcloud_n: 3000
-  pointcloud_noise: 0.0
+  pointcloud_n: null
+  pointcloud_noise: null
   pointcloud_outlier_ratio: 0
   train_split: train
   val_split: test
   test_split: test
 sensor:
-  mode: sensor_vec_norm   # uniform sampling at mean_neighborhood*[-2 -1 1 2] + 1 non-uniform outside sample per point = closest sample point of any other LOS
+  mode: norm+   # uniform sampling at mean_neighborhood*[-2 -1 1 2] + 1 non-uniform outside sample per point = closest sample point of any other LOS
   point_to: sensor
-  steps: [ -1, 0.5, 0.5, 1 ]
-  sampling: non-uniform
+  stepsi: [-2, -1, -0.5 ]
+  stepso: [ 0.5, 1, 2, 4 ]
+  sampling: uniform
   factor: neighborhood # or neighborhood
-  ident_dim: 0
+  ident_dim: 2
 model:
   grid_res: 128 # poisson grid resolution
   psr_sigma: 2
@@ -49,9 +51,10 @@ model:
     sample_mode: bilinear # bilinear / nearest
     hidden_size: 32
 train:
-  batch_size: 16
+  batch_size: 4
   lr: 5e-4
-  out_dir: /mnt/raphael/ModelNet10_out/sap/scan43/debug
+#  out_dir: /mnt/raphael/ModelNet10_out/sap/scan43/debug
+  out_dir: /home/rsulzer/data/ModelNet10_out/sap/scan43/debug
   w_psr: 1
   model_selection_metric: psr_l2
   print_every: 10

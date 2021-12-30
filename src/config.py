@@ -34,7 +34,8 @@ def get_generator(model, cfg, device, **kwargs):
         input_type = cfg['data']['input_type'],
         padding=cfg['data']['padding'],
         dpsr=dpsr,
-        psr_tanh=cfg['model']['psr_tanh']
+        psr_tanh=cfg['model']['psr_tanh'],
+        cfg=cfg
     )
     return generator
 
@@ -108,10 +109,16 @@ def get_inputs_field(mode, cfg):
                 data.SubsamplePointcloud(cfg['data']['pointcloud_n']),
                 data.PointcloudNoise(noise_level)
             ])
+        if not cfg['data']['pointcloud_n'] and not cfg['data']['pointcloud_noise']:
+            transform = None
 
         data_type = cfg['data']['data_type']
+        if cfg['data']['dataset'] == "Shapes3D":
+            filename = str(cfg['data']['scan'])+".npz"
+        else:
+            filename = "pointcloud.npz"
         inputs_field = data.PointCloudField(
-            cfg['data']['pointcloud_file'], data_type, transform,
+            filename, data_type, transform,
             multi_files= cfg['data']['multi_files'], sensor_options=cfg['sensor']
         )    
     else:
@@ -131,19 +138,20 @@ def get_data_fields(mode, cfg):
     
     if (mode in ('val', 'test')):
         transform = data.SubsamplePointcloud(100000)
+        workers = cfg['train']['n_workers_val']
     else:
         transform = data.SubsamplePointcloud(cfg['data']['num_gt_points'])
+        workers = cfg['train']['n_workers']
+
 
     if (mode in ('val', 'test')):
         data_name = cfg['data']['points_iou_file']
         fields['occupancies'] = data.PointsField(data_name,
-                             transform=transform, multi_files=cfg['data']['multi_files'])
+                             transform=transform, multi_files=cfg['data']['multi_files'], workers=workers)
     
     data_name = cfg['data']['pointcloud_file']
-    fields['gt_points'] = data.PointCloudField(data_name, 
-                transform=transform, data_type=data_type, multi_files=cfg['data']['multi_files'])
     fields['gt_points'] = data.PointCloudField(data_name,
-                transform=transform, data_type=data_type, multi_files=cfg['data']['multi_files'])
+                transform=transform, data_type=data_type, multi_files=cfg['data']['multi_files'], workers=workers)
 
     if data_type == 'psr_full':
         if mode != 'test':
