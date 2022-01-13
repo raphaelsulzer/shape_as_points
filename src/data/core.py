@@ -63,8 +63,10 @@ class Shapes3dDataset(data.Dataset):
             categories = [c for c in categories
                           if os.path.isdir(os.path.join(dataset_folder, c))]
 
-        if categories is not 'x':
+        if categories[0] != 'x':
             if 'x' in categories: categories.remove('x')
+        if categories[0] != 'real':
+            if 'real' in categories: categories.remove('real')
         # Read metadata file
         metadata_file = os.path.join(dataset_folder, 'metadata.yaml')
 
@@ -155,8 +157,8 @@ class Shapes3dDataset(data.Dataset):
             # except Exception:
             #     if self.no_except:
             #         logger.warn(
-            #             'Error occured when loading field %s of model %s'
-            #             % (field_name, model)
+            #             'Error occured when loading field %s of model %s %s'
+            #             % (field_name, category, model)
             #         )
             #         return None
             #     else:

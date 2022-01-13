@@ -121,7 +121,7 @@ class MeshEvaluator(object):
             'completeness2': completeness2,
             'accuracy2': accuracy2,
             'chamfer-L2': chamferL2,
-            'chamfer-L1': chamferL1,
+            'chamfer-L1': chamferL1*100,
             'f-score': F[9], # threshold = 1.0%
             'f-score-15': F[14], # threshold = 1.5%
             'f-score-20': F[19], # threshold = 2.0%

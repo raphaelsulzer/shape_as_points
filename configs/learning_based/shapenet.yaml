@@ -1,18 +1,16 @@
 data:
-#  class: null
-#  class: ["02691156",  "02828884"]
-#  class: ["nightstand"]
-  class: ["02933112"]
+  class: null
+#  class: ["02933112", "03211117"]
   dataset: Shapes3D
   scan: 4
   dim: 3
-  with_sensor: true
+  with_sensor: false
   with_normal: false
   with_gt_normal: false
   data_type: psr_full
   input_type: pointcloud
 #  path: /mnt/raphael/ModelNet10
-  path: /mnt/raphael/ShapeNetWatertight
+  path: /mnt/raphael/ShapeNet
 #  path: /home/rsulzer/data/ModelNet10
   pointcloud_file: pointcloud.npz
   num_gt_points: 10000
@@ -22,15 +20,15 @@ data:
   pointcloud_outlier_ratio: 0
   train_split: train
   val_split: test
-  test_split: test2
+  test_split: test
 sensor:
-  mode: norm+   # uniform sampling at mean_neighborhood*[-2 -1 1 2] + 1 non-uniform outside sample per point = closest sample point of any other LOS
+  mode: null   # uniform sampling at mean_neighborhood*[-2 -1 1 2] + 1 non-uniform outside sample per point = closest sample point of any other LOS
   point_to: sensor
   stepsi: [ -1 ]
   stepso: [  1 ]
   sampling: uniform
   factor: neighborhood # or neighborhood
-  ident_dim: 2
+  ident_dim: 0
 model:
   grid_res: 128 # poisson grid resolution
   psr_sigma: 2
@@ -59,9 +57,10 @@ train:
   batch_size: 8
   lr: 5e-4
 #  out_dir: /home/rsulzer/data/ModelNet10_out/sap/scan43/conventional
-  out_dir: /mnt/raphael/ShapeNet_out/sap/norm+
+  out_dir: /mnt/raphael/ShapeNet_out/sap/conventional
 #  out_dir: /mnt/raphael/ModelNet10_out/sap/scan43/conventional
   load_model: model_best
+#  load_model: ours_noise_005
   w_psr: 1
   model_selection_metric: psr_l2
   print_every: 100
@@ -80,7 +79,7 @@ generation:
   exp_oracle: False
   exp_input: False
   exp_mesh: True
-  vis_n_outputs: 2000
+  vis_n_outputs: 10
   generate_mesh: True
   generate_pointcloud: False
   generation_dir: generation

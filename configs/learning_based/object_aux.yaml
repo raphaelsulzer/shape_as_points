@@ -1,17 +1,15 @@
 data:
-  class: null
-  dataset: Shapes3D
-  scan: 4
+  class: ["real"]
+  dataset: ModelNet10
+  scan: 10000
   dim: 3
   with_sensor: true
   with_normal: false
   with_gt_normal: false
   data_type: psr_full
   input_type: pointcloud
-#  path: /mnt/raphael/ModelNet10
-  path: /mnt/raphael/ShapeNet
+  path: /mnt/raphael/ModelNet10
 #  path: /home/rsulzer/data/ModelNet10
-  pointcloud_file: pointcloud.npz
   num_gt_points: 10000
   num_offset: 7
   pointcloud_n: null
@@ -56,7 +54,7 @@ train:
   batch_size: 8
   lr: 5e-4
 #  out_dir: /home/rsulzer/data/ModelNet10_out/sap/scan43/conventional
-  out_dir: /mnt/raphael/ShapeNet_out/sap/norm+
+  out_dir: /mnt/raphael/ModelNet10_out/sap/scan43/uniform_neighborhood_1
   load_model: model_best
   w_psr: 1
   model_selection_metric: psr_l2
@@ -75,11 +73,11 @@ generation:
   exp_gt: False
   exp_oracle: False
   exp_input: False
-  vis_n_outputs: 10
+  vis_n_outputs: 1000
   generate_mesh: True
   generate_pointcloud: False
   generation_dir: generation
-  copy_input: False
+  copy_input: false
   use_sampling: false
   psr_resolution: 128
   psr_sigma: 2

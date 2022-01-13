@@ -97,7 +97,7 @@ class PointCloudField(Field):
 
         pointcloud_dict = np.load(file_path)
 
-        if (self.sensor_options): # sensor_options is only set for input field (not for gt_points field)
+        if (self.sensor_options["mode"]): # sensor_options is only set for input field (not for gt_points field)
             asc = AddSensor(self.sensor_options,self.workers)
             data = asc.add(pointcloud_dict)
         else:
@@ -106,10 +106,14 @@ class PointCloudField(Field):
                 'normals': pointcloud_dict['normals'].astype(np.float32)
             }
 
+
         # R=np.array([[-1, 0, 0], [0, 0, 1], [0, 1, 0]],dtype=np.float32)
         # data[None][:,:3]=np.matmul(data[None][:,:3], R)
         # data['normals']=np.matmul(data["normals"],R)
-
+        # if("gt_normals" in data):
+        #     data['gt_normals']=np.matmul(data["gt_normals"],R)
+        # if("sensors" in data):
+        #     data['sensors']=np.matmul(data["sensors"],R)
 
         if self.transform is not None:
             data = self.transform(data)
@@ -174,7 +178,7 @@ class PointsField(Field):
 
         # R=np.array([[-1, 0, 0], [0, 0, 1], [0, 1, 0]],dtype=np.float32)
         # points=np.matmul(points,R)
-
+        #
         # Break symmetry if given in float16:
         if points.dtype == np.float16:
             points = points.astype(np.float32)

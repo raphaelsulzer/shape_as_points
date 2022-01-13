@@ -145,7 +145,10 @@ class AddSensor():
 
         points = pointcloud_dict['points'].astype(np.float32)
         normals = pointcloud_dict['normals'].astype(np.float32)
-        gt_normals = pointcloud_dict['gt_normals'].astype(np.float32)
+        if 'gt_normals' in pointcloud_dict.files:
+            gt_normals = pointcloud_dict['gt_normals'].astype(np.float32)
+        else:
+            gt_normals = np.zeros(shape=points.shape)
         if 'sensor_position' in pointcloud_dict.files:
             sensors = pointcloud_dict['sensor_position'].astype(np.float32)
         elif 'sensors' in pointcloud_dict.files:

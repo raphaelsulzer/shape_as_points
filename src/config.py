@@ -63,7 +63,7 @@ def get_dataset(mode, cfg, return_idx=False):
     split = splits[mode]
 
     # Create dataset
-    if dataset_type == 'Shapes3D' or dataset_type == 'ModelNet10':
+    if dataset_type == 'Shapes3D' or dataset_type == 'ModelNet10' or dataset_type == 'eth':
         fields = get_data_fields(mode, cfg)
         # Input fields
         inputs_field = get_inputs_field(mode, cfg)
@@ -98,7 +98,7 @@ def get_inputs_field(mode, cfg):
         inputs_field = None
     elif input_type == 'pointcloud':
         noise_level = cfg['data']['pointcloud_noise']
-        if cfg['data']['pointcloud_outlier_ratio']>0:
+        if cfg['data']['pointcloud_outlier_ratio']:
             transform = transforms.Compose([
                 data.SubsamplePointcloud(cfg['data']['pointcloud_n']),
                 data.PointcloudNoise(noise_level),
