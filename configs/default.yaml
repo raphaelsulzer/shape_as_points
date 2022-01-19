@@ -1,5 +1,6 @@
 data:
   dataset: Shapes3D
+  transform: 0
   path: data/ShapeNet
   class: null
   data_type: img

@@ -45,7 +45,13 @@ class Generator3D(object):
         stats_dict = {}
 
         p = data.get('inputs', torch.empty(1, 0)).to(device)
-        if self.cfg['data']['with_sensor']:
+
+        # p = (p - 0.5) * 1.2
+        # R=np.array([[-1, 0, 0], [0, 0, 1], [0, 1, 0]],dtype=np.float32)
+        # p=torch.matmul(p, torch.from_numpy(R).to(device))
+        # p = p / 1.2 + 0.5
+
+        if self.cfg['sensor']['vector'] == "sensor":
             s = data.get('inputs.sensors').to(self.device)
             p = torch.cat((p, s), axis=2)
 

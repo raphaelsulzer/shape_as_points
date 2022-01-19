@@ -92,8 +92,7 @@ class Encode2Points(nn.Module):
         encoder = cfg['model']['encoder']
         decoder = cfg['model']['decoder']
         dim = cfg['data']['dim']
-        p_dim = dim + cfg['sensor']['ident_dim'] + 3 * int(cfg['data']['with_sensor']) + 3 * int(
-            cfg['data']['with_normal']) + 3 * int(cfg['data']['with_gt_normal'])
+        p_dim = dim + cfg['sensor']['ident_dim'] + 3 * int(cfg['sensor']['vector'] is not None)
         # input dim
         c_dim = cfg['model']['c_dim']
         encoder_kwargs = cfg['model']['encoder_kwargs']
@@ -127,15 +126,16 @@ class Encode2Points(nn.Module):
             **encoder_kwargs
         )
 
+        # n_indim = dim + 3 * int(cfg['sensor']['vector'] is not None)
         if self.predict_normal:
             # decoder for normal prediction
             self.decoder_normal = decoder_dict[decoder](
-                dim=dim, c_dim=c_dim, out_dim=out_dim,
+                dim=p_dim, c_dim=c_dim, out_dim=out_dim,
                 **decoder_kwargs)
         if self.predict_offset:
             # decoder for offset prediction
             self.decoder_offset = decoder_dict[decoder](
-                dim=dim, c_dim=c_dim, out_dim=out_dim_offset,
+                dim=p_dim, c_dim=c_dim, out_dim=out_dim_offset,
                 map2local=local_mapping,
                 **decoder_kwargs)
 
@@ -160,7 +160,8 @@ class Encode2Points(nn.Module):
         c = self.encoder(p)
         t1 = time.perf_counter()
         if self.predict_offset:
-            offset = self.decoder_offset(p[:,:,:3], c)
+            # offset = self.decoder_offset(p[:,:,:3], c)
+            offset = self.decoder_offset(p, c)
             # more than one offset is predicted per-point
             if self.num_offset > 1:
                 points = points.repeat(1, 1, self.num_offset).reshape(batch_size, -1, 3)
@@ -169,7 +170,11 @@ class Encode2Points(nn.Module):
             points = p
 
         if self.predict_normal:
-            normals = self.decoder_normal(points, c)
+            # TODO: keep the sensor_vec for this
+            if(self.cfg["sensor"]["mode"]):
+                normals = self.decoder_normal(torch.cat((points,p[:,:,3:].repeat(1, 1, self.num_offset).reshape(batch_size, -1, p.shape[-1]-3)),axis=2), c)
+            else:
+                normals = self.decoder_normal(points, c)
         t2 = time.perf_counter()
         
         time_dict['encode'] = t1 - t0

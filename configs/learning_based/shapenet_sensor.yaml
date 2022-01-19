@@ -1,17 +1,12 @@
 data:
   class: null
-#  class: ["02691156",  "02828884"]
-  dataset: Shapes3D
+  dataset: ShapeNet
+  transform: 1
   scan: 4
   dim: 3
-  with_sensor: true
-  with_normal: false
-  with_gt_normal: false
   data_type: psr_full
   input_type: pointcloud
-#  path: /mnt/raphael/ModelNet10
-  path: /mnt/raphael/ShapeNetWatertight
-#  path: /home/rsulzer/data/ModelNet10
+  path: /mnt/raphael/ShapeNet
   pointcloud_file: pointcloud.npz
   num_gt_points: 10000
   num_offset: 7
@@ -20,10 +15,10 @@ data:
   pointcloud_outlier_ratio: 0
   train_split: train
   val_split: test
-  test_split: test
+  test_split: test100
 sensor:
   mode: sensor_vec_norm   # uniform sampling at mean_neighborhood*[-2 -1 1 2] + 1 non-uniform outside sample per point = closest sample point of any other LOS
-  point_to: sensor
+  vector: sensor
   stepsi: [ -1 ]
   stepso: [  1 ]
   sampling: uniform
@@ -57,7 +52,7 @@ train:
   batch_size: 8
   lr: 5e-4
 #  out_dir: /home/rsulzer/data/ModelNet10_out/sap/scan43/conventional
-  out_dir: /mnt/raphael/ShapeNet_out/sap/sensor_vec_norm
+  out_dir: /mnt/raphael/ShapeNet_out/sap/svn
   load_model: model_best
   w_psr: 1
   model_selection_metric: psr_l2
@@ -76,7 +71,7 @@ generation:
   exp_gt: False
   exp_oracle: False
   exp_input: False
-  vis_n_outputs: 100
+  vis_n_outputs: 10000
   generate_mesh: True
   generate_pointcloud: False
   generation_dir: generation

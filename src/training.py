@@ -51,7 +51,7 @@ class Trainer(object):
         '''
         self.optimizer.zero_grad()
         p = data.get('inputs').to(self.device)
-        if self.cfg['data']['with_sensor']:
+        if self.cfg['sensor']['vector'] == "sensor":
             s = data.get('inputs.sensors').to(self.device)
             p = torch.cat((p, s), axis=2)
 
@@ -177,7 +177,7 @@ class Trainer(object):
     def generate_and_evaluate(self,model,data):
 
         p = data.get('inputs').to(self.device)
-        if self.cfg['data']['with_sensor']:
+        if self.cfg['sensor']['vector'] == "sensor":
             s = data.get('inputs.sensors').to(self.device)
             p = torch.cat((p, s), axis=2)
 
@@ -233,7 +233,7 @@ class Trainer(object):
         eval_dict = {}
 
         p = data.get('inputs').to(self.device)
-        if self.cfg['data']['with_sensor']:
+        if self.cfg['sensor']['vector'] == "sensor":
             s = data.get('inputs.sensors').to(self.device)
             p = torch.cat((p, s), axis=2)
 

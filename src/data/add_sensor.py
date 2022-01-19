@@ -11,50 +11,45 @@ class AddSensor():
         self.sensor_options = sensor_options
         self.workers= workers
 
+    def add(self, pointcloud_dict):
 
-    def add(self,pointcloud_dict):
-
-        if(self.sensor_options["mode"] == "norm+"):
-            if(self.sensor_options["sampling"] == 'uniform'):
-                if(self.sensor_options["factor"] == 'los'):
+        if (self.sensor_options["mode"] == "norm+"):
+            if (self.sensor_options["sampling"] == 'uniform'):
+                if (self.sensor_options["factor"] == 'los'):
                     data = self.add_uniform_los(pointcloud_dict)
-                elif(self.sensor_options["factor"] == "neighborhood"):
+                elif (self.sensor_options["factor"] == "neighborhood"):
                     data = self.add_uniform_neighborhood(pointcloud_dict)
+                elif (self.sensor_options["factor"] == "custom"):
+                    data = self.add_uniform_custom(pointcloud_dict)
                 else:
                     print("ERROR: no valid factor for auxiliary sensor information points.")
                     sys.exit(1)
-            elif(self.sensor_options["sampling"] == 'non-uniform'):
+            elif (self.sensor_options["sampling"] == 'non-uniform'):
                 data = self.add_non_uniform(pointcloud_dict)
             else:
                 print("ERROR: no valid sampling strategy for auxiliary sensor information points.")
                 sys.exit(1)
-        elif(self.sensor_options["mode"] == "read"):
+        elif (self.sensor_options["mode"] == "read"):
             points = pointcloud_dict['points'].astype(np.float32)
             normals = pointcloud_dict['normals']
-            normal_zeros = np.zeros(shape=(points.shape[0]-normals.shape[0],3))
-            normals = np.concatenate((normals,normal_zeros)).astype(np.float32)
+            normal_zeros = np.zeros(shape=(points.shape[0] - normals.shape[0], 3))
+            normals = np.concatenate((normals, normal_zeros)).astype(np.float32)
 
             gt_normals = pointcloud_dict['gt_normals']
-            normal_zeros = np.zeros(shape=(points.shape[0]-gt_normals.shape[0],3))
-            gt_normals = np.concatenate((gt_normals,normal_zeros)).astype(np.float32)
+            normal_zeros = np.zeros(shape=(points.shape[0] - gt_normals.shape[0], 3))
+            gt_normals = np.concatenate((gt_normals, normal_zeros)).astype(np.float32)
 
-            if 'sensor_position' in pointcloud_dict.files:
-                sensors = pointcloud_dict['sensor_position'].astype(np.float32)
-            elif 'sensors' in pointcloud_dict.files:
-                sensors = pointcloud_dict['sensors'].astype(np.float32)
-            else:
-                print('no sensor infor in file')
-                sys.exit(1)
+            sensors = pointcloud_dict['sensors'].astype(np.float32)
             data = {
                 None: points,
                 'normals': normals,
                 'gt_normals': gt_normals,
                 'sensors': sensors,
             }
-        elif(self.sensor_options["mode"] == "sensor_vec_norm"):
-            points = pointcloud_dict['points'].astype(np.float32)[:,:3]
+        elif (self.sensor_options["mode"] == "sensor_vec_norm"):
+            points = pointcloud_dict['points'].astype(np.float32)[:, :3]
             normals = pointcloud_dict['normals'].astype(np.float32)
-            if('gt_normals' in pointcloud_dict):
+            if ('gt_normals' in pointcloud_dict):
                 gt_normals = pointcloud_dict['gt_normals'].astype(np.float32)[:]
             else:
                 gt_normals = np.zeros(shape=points.shape)
@@ -75,23 +70,63 @@ class AddSensor():
                 'gt_normals': gt_normals,
                 'sensors': sensors,
             }
-        else:
-            points = pointcloud_dict['points'].astype(np.float32)
-            points = points[:,:3]
+        elif (self.sensor_options["mode"] == "sensor_vec"):
+            points = pointcloud_dict['points'].astype(np.float32)[:, :3]
             normals = pointcloud_dict['normals'].astype(np.float32)
             if ('gt_normals' in pointcloud_dict):
                 gt_normals = pointcloud_dict['gt_normals'].astype(np.float32)[:]
             else:
                 gt_normals = np.zeros(shape=points.shape)
-            if ('sensors' in pointcloud_dict):
+
+            if 'sensor_position' in pointcloud_dict.files:
+                sensors = pointcloud_dict['sensor_position'].astype(np.float32)
+            elif 'sensors' in pointcloud_dict.files:
                 sensors = pointcloud_dict['sensors'].astype(np.float32)
             else:
-                sensors = np.zeros(shape=points.shape)
+                print('no sensor infor in file')
+                sys.exit(1)
+            sensors = sensors - points
             data = {
                 None: points,
                 'normals': normals,
                 'gt_normals': gt_normals,
                 'sensors': sensors,
+            }
+        elif (self.sensor_options["mode"] == "sensor_pos"):
+            points = pointcloud_dict['points'].astype(np.float32)[:, :3]
+            normals = pointcloud_dict['normals'].astype(np.float32)
+            if ('gt_normals' in pointcloud_dict):
+                gt_normals = pointcloud_dict['gt_normals'].astype(np.float32)[:]
+            else:
+                gt_normals = np.zeros(shape=points.shape)
+            if 'sensor_position' in pointcloud_dict.files:
+                sensors = pointcloud_dict['sensor_position'].astype(np.float32)
+            elif 'sensors' in pointcloud_dict.files:
+                sensors = pointcloud_dict['sensors'].astype(np.float32)
+            else:
+                print('no sensor infor in file')
+                sys.exit(1)
+            data = {
+                None: points,
+                'normals': normals,
+                'gt_normals': gt_normals,
+                'sensors': sensors,
+            }
+        else:
+            points = pointcloud_dict['points'].astype(np.float32)
+            points = points[:, :3]
+            if ('normals' in pointcloud_dict):
+                normals = pointcloud_dict['normals'].astype(np.float32)
+            else:
+                normals = np.zeros(shape=points.shape)
+            if ('gt_normals' in pointcloud_dict):
+                gt_normals = pointcloud_dict['gt_normals'].astype(np.float32)[:]
+            else:
+                gt_normals = np.zeros(shape=points.shape)
+            data = {
+                None: points,
+                'normals': normals,
+                'gt_normals': gt_normals,
             }
 
         return data

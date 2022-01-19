@@ -1,11 +1,8 @@
 data:
   class: null
   dataset: ModelNet10
-  scan: 43
+  scan: 42
   dim: 3
-  with_sensor: true
-  with_normal: false
-  with_gt_normal: false
   data_type: psr_full
   input_type: pointcloud
   path: /mnt/raphael/ModelNet10
@@ -19,7 +16,7 @@ data:
   test_split: test
 sensor:
   mode: sensor_vec_norm   # uniform sampling at mean_neighborhood*[-2 -1 1 2] + 1 non-uniform outside sample per point = closest sample point of any other LOS
-  point_to: sensor
+  vector: sensor
   stepsi: [ -1 ]
   stepso: [  1 ]
   sampling: uniform
@@ -53,26 +50,26 @@ train:
   batch_size: 16
   lr: 5e-4
 #  out_dir: /home/rsulzer/data/ModelNet10_out/sap/scan43/norm+
-  out_dir: /mnt/raphael/ModelNet10_out/sap/scan43/sensor_vec_norm
+  out_dir: /mnt/raphael/ModelNet10_out/sap/scan42/svn
   load_model: model_best
   w_psr: 1
   model_selection_metric: psr_l2
   print_every: 100
-  checkpoint_every: 1000
-  validate_every: 1000
+  checkpoint_every: 2000
+  validate_every: 2000
   backup_every: 10000
   total_epochs: 400000
   visualize_every: 500000
   exp_pcl: True
   exp_mesh: True
-  n_workers: 0
-  n_workers_val: 0
+  n_workers: 3
+  n_workers_val: 3
 generation:
   batch_size: 100000
   exp_gt: False
   exp_oracle: false
   exp_input: false
-  vis_n_outputs: 10000
+  vis_n_outputs: 100000
   generate_mesh: true
   generate_pointcloud: false
   generation_dir: generation

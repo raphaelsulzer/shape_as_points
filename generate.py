@@ -63,7 +63,7 @@ def main():
         elif args.iter is not None:
             state_dict = torch.load(os.path.join(out_dir, 'model', '%04d.pt'% args.iter))
         else:
-            state_dict = torch.load(os.path.join(out_dir, 'models' ,str(cfg['train']['load_model'])+'.pt'))
+            state_dict = torch.load(os.path.join(out_dir, 'models' ,str(cfg['train']['load_model'])+'.pt'),map_location=device)
             print("Loaded model from ", os.path.join(out_dir, 'models' ,str(cfg['train']['load_model'])+'.pt'))
 
         load_model_manual(state_dict['state_dict'], model)

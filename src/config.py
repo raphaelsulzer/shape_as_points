@@ -63,7 +63,7 @@ def get_dataset(mode, cfg, return_idx=False):
     split = splits[mode]
 
     # Create dataset
-    if dataset_type == 'Shapes3D' or dataset_type == 'ModelNet10' or dataset_type == 'eth':
+    if dataset_type == 'ShapeNet' or dataset_type == 'ModelNet10' or dataset_type == 'eth':
         fields = get_data_fields(mode, cfg)
         # Input fields
         inputs_field = get_inputs_field(mode, cfg)
@@ -113,13 +113,13 @@ def get_inputs_field(mode, cfg):
             transform = None
 
         data_type = cfg['data']['data_type']
-        if cfg['data']['dataset'] == "Shapes3D":
+        if cfg['data']['dataset'] == "ShapeNet":
             filename = str(cfg['data']['scan'])+".npz"
         else:
             filename = "pointcloud.npz"
         inputs_field = data.PointCloudField(
             filename, data_type, transform,
-            multi_files= cfg['data']['multi_files'], sensor_options=cfg['sensor']
+            multi_files= cfg['data']['multi_files'], sensor_options=cfg['sensor'], cfg=cfg
         )    
     else:
         raise ValueError(
@@ -147,11 +147,11 @@ def get_data_fields(mode, cfg):
     if (mode in ('val', 'test')):
         data_name = cfg['data']['points_iou_file']
         fields['occupancies'] = data.PointsField(data_name,
-                             transform=transform, multi_files=cfg['data']['multi_files'], workers=workers)
+                             transform=transform, multi_files=cfg['data']['multi_files'], workers=workers, cfg=cfg)
     
     data_name = cfg['data']['pointcloud_file']
     fields['gt_points'] = data.PointCloudField(data_name,
-                transform=transform, data_type=data_type, multi_files=cfg['data']['multi_files'], workers=workers)
+                transform=transform, data_type=data_type, multi_files=cfg['data']['multi_files'], workers=workers, cfg=cfg)
 
     if data_type == 'psr_full':
         if mode != 'test':

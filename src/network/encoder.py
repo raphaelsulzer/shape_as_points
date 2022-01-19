@@ -130,6 +130,7 @@ class LocalPoolPointnet(nn.Module):
     def forward(self, p, normalize=True):
         batch_size, T, D = p.size()
 
+
         # acquire the index for each point
         coord = {}
         index = {}
@@ -144,7 +145,7 @@ class LocalPoolPointnet(nn.Module):
             index['yz'] = coordinate2index(coord['yz'], self.reso_plane)
         if 'grid' in self.plane_type:
             if normalize:
-                coord['grid'] = normalize_3d_coordinate(p.clone())
+                coord['grid'] = normalize_3d_coordinate(p[:,:,:3].clone())
             else:
                 coord['grid'] = p.clone()[...,:3]
             index['grid'] = coordinate2index(coord['grid'], self.reso_grid, coord_type='3d')
@@ -152,9 +153,11 @@ class LocalPoolPointnet(nn.Module):
         
         if self.pe:
             p = self.pe(p)
-            
+
         if self.map2local:
-            pp = self.map2local(p)
+            p_rest = p[:, :, 3:]
+            pp = self.map2local(p[:,:,:3])
+            pp = torch.cat((pp,p_rest),axis=2)
             net = self.fc_pos(pp)
         else:
             net = self.fc_pos(p)

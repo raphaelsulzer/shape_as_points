@@ -76,7 +76,10 @@ def normalize_coordinate(p, plane='xz'):
 
 def normalize_3d_coordinate(p):
     ''' Normalize coordinate to [0, 1] for unit cube experiments.
-    '''   
+    '''
+
+
+
     if p.max() >= 1:
         p[p >= 1] = 1 - 10e-6
     if p.min() < 0:

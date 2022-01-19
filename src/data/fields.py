@@ -68,7 +68,7 @@ class PointCloudField(Field):
         transform (list): list of transformations applied to data points
         multi_files (callable): number of files
     '''
-    def __init__(self, file_name, data_type=None, transform=None, multi_files=None, padding=0.1, scale=1.2, sensor_options=None, workers=None):
+    def __init__(self, file_name, data_type=None, transform=None, multi_files=None, padding=0.1, scale=1.2, sensor_options=None, workers=None, cfg=None):
         self.file_name = file_name
         self.data_type = data_type # to make sure the range of input is correct
         self.transform = transform
@@ -77,6 +77,7 @@ class PointCloudField(Field):
         self.scale = scale
         self.sensor_options = sensor_options
         self.workers = workers
+        self.cfg = cfg
 
 
     def load(self, model_path, idx, category):
@@ -97,7 +98,18 @@ class PointCloudField(Field):
 
         pointcloud_dict = np.load(file_path)
 
-        if (self.sensor_options["mode"]): # sensor_options is only set for input field (not for gt_points field)
+        # if self.data_type == 'psr_full':
+        #     # scale the point cloud to the range of (0, 1)
+        #     pointcloud_dict["points"] = pointcloud_dict["points"] / self.scale + 0.5
+        #     if 'sensor_position' in pointcloud_dict.files:
+        #         pointcloud_dict["sensor_position"] = pointcloud_dict["sensor_position"] / self.scale + 0.5
+        #     elif 'sensors' in pointcloud_dict.files:
+        #         pointcloud_dict["sensors"] = pointcloud_dict["sensors"] / self.scale + 0.5
+        #     else:
+        #         print('no sensor infor in file')
+        #         sys.exit(1)
+
+        if (self.sensor_options): # sensor_options is only set for input field (not for gt_points field)
             asc = AddSensor(self.sensor_options,self.workers)
             data = asc.add(pointcloud_dict)
         else:
@@ -106,14 +118,14 @@ class PointCloudField(Field):
                 'normals': pointcloud_dict['normals'].astype(np.float32)
             }
 
-
-        # R=np.array([[-1, 0, 0], [0, 0, 1], [0, 1, 0]],dtype=np.float32)
-        # data[None][:,:3]=np.matmul(data[None][:,:3], R)
-        # data['normals']=np.matmul(data["normals"],R)
-        # if("gt_normals" in data):
-        #     data['gt_normals']=np.matmul(data["gt_normals"],R)
-        # if("sensors" in data):
-        #     data['sensors']=np.matmul(data["sensors"],R)
+        if(self.cfg["data"]["transform"]):
+            R=np.array([[-1, 0, 0], [0, 0, 1], [0, 1, 0]],dtype=np.float32)
+            data[None][:,:3]=np.matmul(data[None][:,:3], R)
+            data['normals']=np.matmul(data["normals"],R)
+            if("gt_normals" in data):
+                data['gt_normals']=np.matmul(data["gt_normals"],R)
+            if("sensors" in data):
+                data['sensors']=np.matmul(data["sensors"],R)
 
         if self.transform is not None:
             data = self.transform(data)
@@ -121,8 +133,10 @@ class PointCloudField(Field):
         if self.data_type == 'psr_full':
             # scale the point cloud to the range of (0, 1)
             data[None][:,:3] = data[None][:,:3] / self.scale + 0.5
-        #     TODO: be sure that I do not have to do this for the sensor vector
-        #  in doubt, I could do it to the sensor position for sure
+            # TODO: be sure that I do not have to do this for the sensor vector
+            # in doubt, I could do it to the sensor position for sure
+            # so the conclusion is, rotations should be applied to sensor_vector and normal vector as well
+            # translations should not!
 
 
 
@@ -153,11 +167,12 @@ class PointsField(Field):
         multi_files (callable): number of files
 
     '''
-    def __init__(self, file_name, transform=None, unpackbits=True, multi_files=None, workers=None):
+    def __init__(self, file_name, transform=None, unpackbits=True, multi_files=None, workers=None, cfg=None):
         self.file_name = file_name
         self.transform = transform
         self.unpackbits = unpackbits
         self.multi_files = multi_files
+        self.cfg=cfg
 
     def load(self, model_path, idx, category):
         ''' Loads the data point.
@@ -176,8 +191,12 @@ class PointsField(Field):
         points_dict = np.load(file_path)
         points = points_dict['points']
 
-        # R=np.array([[-1, 0, 0], [0, 0, 1], [0, 1, 0]],dtype=np.float32)
-        # points=np.matmul(points,R)
+
+        if(self.cfg["data"]["transform"]):
+            R=np.array([[-1, 0, 0], [0, 0, 1], [0, 1, 0]],dtype=np.float32)
+            points=np.matmul(points,R)
+
+
         #
         # Break symmetry if given in float16:
         if points.dtype == np.float16:

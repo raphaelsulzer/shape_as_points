@@ -75,19 +75,21 @@ class LocalDecoder(nn.Module):
         plane_type = list(c_plane.keys())
         c = 0
         if 'grid' in plane_type:
-            c += self.sample_grid_feature(p, c_plane['grid'])
+            c += self.sample_grid_feature(p[:,:,:3].clone(), c_plane['grid'])
         if 'xz' in plane_type:
-            c += self.sample_plane_feature(p, c_plane['xz'], plane='xz')
+            c += self.sample_plane_feature(p[:,:,:3].clone(), c_plane['xz'], plane='xz')
         if 'xy' in plane_type:
-            c += self.sample_plane_feature(p, c_plane['xy'], plane='xy')
+            c += self.sample_plane_feature(p[:,:,:3].clone(), c_plane['xy'], plane='xy')
         if 'yz' in plane_type:
-            c += self.sample_plane_feature(p, c_plane['yz'], plane='yz')
+            c += self.sample_plane_feature(p[:,:,:3].clone(), c_plane['yz'], plane='yz')
         c = c.transpose(1, 2)
 
         p = p.float()
 
         if self.map2local:
-            p = self.map2local(p)
+            p_rest = p[:, :, 3:].clone()
+            p = self.map2local(p[:,:,:3])
+            p = torch.cat((p,p_rest),axis=2)
         
         net = self.fc_p(p)
 
