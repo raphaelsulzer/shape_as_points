@@ -19,7 +19,7 @@ For reconstructing e.g. the ModelNet10 dataset run
 `python generate.py configs/pointcloud/modelnet/config`
 
 where `config` should be replaced with
-- `modelnet.yaml` for reconstruction from a point cloud (traditional ConvONet)
+- `modelnet.yaml` for reconstruction from a point cloud (traditional Shape As Points)
 - `modelnetSV.yaml` for reconstruction from a point cloud augmented with sensor vectors
 - `modelnetAP.yaml` for reconstruction from a point cloud augmented with sensor vectors and auxiliary points
 
