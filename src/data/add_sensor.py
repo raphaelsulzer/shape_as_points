@@ -59,7 +59,7 @@ class AddSensor():
             elif 'sensors' in pointcloud_dict.files:
                 sensors = pointcloud_dict['sensors'].astype(np.float32)
             else:
-                print('no sensor infor in file')
+                print('no sensor info in file')
                 sys.exit(1)
             sensors = sensors - points
             sensors = sensors / np.linalg.norm(sensors, axis=1)[:, np.newaxis]
@@ -83,7 +83,7 @@ class AddSensor():
             elif 'sensors' in pointcloud_dict.files:
                 sensors = pointcloud_dict['sensors'].astype(np.float32)
             else:
-                print('no sensor infor in file')
+                print('no sensor info in file')
                 sys.exit(1)
             sensors = sensors - points
             data = {
@@ -104,7 +104,7 @@ class AddSensor():
             elif 'sensors' in pointcloud_dict.files:
                 sensors = pointcloud_dict['sensors'].astype(np.float32)
             else:
-                print('no sensor infor in file')
+                print('no sensor info in file')
                 sys.exit(1)
             data = {
                 None: points,
@@ -189,13 +189,8 @@ class AddSensor():
         elif 'sensors' in pointcloud_dict.files:
             sensors = pointcloud_dict['sensors'].astype(np.float32)
         else:
-            print('no sensor infor in file')
+            print('no sensor info in file')
             sys.exit(1)
-
-        # get the factor for where to put the point
-        # pc = o3d.geometry.PointCloud()
-        # pc.points = o3d.utility.Vector3dVector(points)
-        # mean_dist = np.array(o3d.geometry.PointCloud.compute_nearest_neighbor_distance(pc)).mean()
 
         tree = cKDTree(points)
         mean_dist=tree.query(points,k=2,workers=self.workers)[0][:,1].mean()
@@ -223,9 +218,9 @@ class AddSensor():
                                   np.zeros(shape=(ipoints.shape[0], 1), dtype=np.float32)), axis=1)
 
         points = np.concatenate((points, opoints, ipoints))
-        normals = np.repeat(normals, len(self.sensor_options["stepso"]) + len(self.sensor_options["stepsi"]) + 1, axis=0)
-        gt_normals = np.repeat(gt_normals, len(self.sensor_options["stepso"]) + len(self.sensor_options["stepsi"]) + 1, axis=0)
-        sensor_vec_norm = np.repeat(sensor_vec_norm, len(self.sensor_options["stepso"]) + len(self.sensor_options["stepsi"]) + 1, axis=0)
+        normals = np.tile(normals, (len(self.sensor_options["stepso"]) + len(self.sensor_options["stepsi"]) + 1,1))
+        gt_normals = np.tile(gt_normals, (len(self.sensor_options["stepso"]) + len(self.sensor_options["stepsi"]) + 1,1))
+        sensor_vec_norm = np.tile(sensor_vec_norm, (len(self.sensor_options["stepso"]) + len(self.sensor_options["stepsi"]) + 1,1))
 
         assert (points.shape[0] == normals.shape[0] == gt_normals.shape[0] == sensor_vec_norm.shape[0])
 

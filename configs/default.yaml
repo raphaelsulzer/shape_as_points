@@ -13,7 +13,8 @@ data:
   n_views_input: 20
   n_views_per_iter: 2
   pointcloud_noise: 0
-  pointcloud_file: pointcloud.npz
+  pointcloud_file: scan.npz
+  gt_file: pointcloud.npz
   pointcloud_outlier_ratio: 0
   fixed_scale: 0
   train_split: train

@@ -1,4 +1,3 @@
-/out
 /data
 .vscode
 .cache
@@ -20,6 +19,7 @@
 *.npz
 *.txt
 # *.sh
+.idea
 
 
 # Byte-compiled / optimized / DLL files

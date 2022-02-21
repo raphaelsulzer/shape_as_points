@@ -148,7 +148,7 @@ class Shapes3dDataset(data.Dataset):
                 model_path = os.path.join(self.dataset_folder, category, "sap", model)
             else:
                 if(self.cfg["data"]["dataset"] == "ModelNet10"):
-                    model_path = os.path.join(self.dataset_folder, category, "convonet", scan_conf, model)
+                    model_path = os.path.join(self.dataset_folder, category, "scan", scan_conf, model)
                 else:
                     model_path = os.path.join(self.dataset_folder, category, model, "scan")
 

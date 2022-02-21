@@ -98,16 +98,6 @@ class PointCloudField(Field):
 
         pointcloud_dict = np.load(file_path)
 
-        # if self.data_type == 'psr_full':
-        #     # scale the point cloud to the range of (0, 1)
-        #     pointcloud_dict["points"] = pointcloud_dict["points"] / self.scale + 0.5
-        #     if 'sensor_position' in pointcloud_dict.files:
-        #         pointcloud_dict["sensor_position"] = pointcloud_dict["sensor_position"] / self.scale + 0.5
-        #     elif 'sensors' in pointcloud_dict.files:
-        #         pointcloud_dict["sensors"] = pointcloud_dict["sensors"] / self.scale + 0.5
-        #     else:
-        #         print('no sensor infor in file')
-        #         sys.exit(1)
 
         if (self.sensor_options): # sensor_options is only set for input field (not for gt_points field)
             asc = AddSensor(self.sensor_options,self.workers)

@@ -1,5 +1,5 @@
 data:
-  class: null
+  class: ["toilet","bed"]
   dataset: ModelNet10
   scan: 42
   dim: 3
@@ -69,7 +69,7 @@ generation:
   exp_gt: False
   exp_oracle: False
   exp_input: False
-  vis_n_outputs: 100000
+  vis_n_outputs: 10000
   generate_mesh: True
   generate_pointcloud: False
   generation_dir: generation

@@ -1,7 +1,7 @@
 data:
   class: null
   dataset: ModelNet10
-  scan: 42
+  scan: 43
   dim: 3
   data_type: psr_full
   input_type: pointcloud
@@ -15,13 +15,13 @@ data:
   val_split: test
   test_split: test
 sensor:
-  mode: sensor_vec_norm   # uniform sampling at mean_neighborhood*[-2 -1 1 2] + 1 non-uniform outside sample per point = closest sample point of any other LOS
+  mode: norm+   # uniform sampling at mean_neighborhood*[-2 -1 1 2] + 1 non-uniform outside sample per point = closest sample point of any other LOS
   vector: sensor
-  stepsi: [ -1 ]
-  stepso: [  1 ]
+  stepsi: [-1]
+  stepso: [ 1]
   sampling: uniform
   factor: neighborhood # or neighborhood
-  ident_dim: 0
+  ident_dim: 2
 model:
   grid_res: 128 # poisson grid resolution
   psr_sigma: 2
@@ -47,10 +47,10 @@ model:
     sample_mode: bilinear # bilinear / nearest
     hidden_size: 32
 train:
-  batch_size: 16
+  batch_size: 8
   lr: 5e-4
-#  out_dir: /home/rsulzer/data/ModelNet10_out/sap/scan43/norm+
-  out_dir: /mnt/raphael/ModelNet10_out/sap/scan42/svn
+#  out_dir: /home/rsulzer/data/ModelNet10_out/sap/scan43/conventional
+  out_dir: /mnt/raphael/ModelNet10_out/sap/scan43/AP
   load_model: model_best
   w_psr: 1
   model_selection_metric: psr_l2
@@ -62,16 +62,16 @@ train:
   visualize_every: 500000
   exp_pcl: True
   exp_mesh: True
-  n_workers: 3
-  n_workers_val: 3
+  n_workers: 4
+  n_workers_val: 4
 generation:
   batch_size: 100000
   exp_gt: False
-  exp_oracle: false
-  exp_input: false
+  exp_oracle: False
+  exp_input: False
   vis_n_outputs: 100000
-  generate_mesh: true
-  generate_pointcloud: false
+  generate_mesh: True
+  generate_pointcloud: False
   generation_dir: generation
   copy_input: false
   use_sampling: false

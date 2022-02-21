@@ -116,7 +116,7 @@ def get_inputs_field(mode, cfg):
         if cfg['data']['dataset'] == "ShapeNet":
             filename = str(cfg['data']['scan'])+".npz"
         else:
-            filename = "pointcloud.npz"
+            filename = cfg['data']['pointcloud_file']
         inputs_field = data.PointCloudField(
             filename, data_type, transform,
             multi_files= cfg['data']['multi_files'], sensor_options=cfg['sensor'], cfg=cfg
@@ -148,8 +148,10 @@ def get_data_fields(mode, cfg):
         data_name = cfg['data']['points_iou_file']
         fields['occupancies'] = data.PointsField(data_name,
                              transform=transform, multi_files=cfg['data']['multi_files'], workers=workers, cfg=cfg)
-    
-    data_name = cfg['data']['pointcloud_file']
+
+
+    # data_name = cfg['data']['pointcloud_file']
+    data_name = cfg['data']['gt_file']
     fields['gt_points'] = data.PointCloudField(data_name,
                 transform=transform, data_type=data_type, multi_files=cfg['data']['multi_files'], workers=workers, cfg=cfg)
 
