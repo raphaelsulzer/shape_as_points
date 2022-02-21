@@ -3,7 +3,6 @@
 .cache
 *.pyc
 *.pyd
-*.pt
 *.so
 *.o
 *.prof
