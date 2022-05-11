@@ -61,6 +61,7 @@ def main():
     writer = SummaryWriter(log_dir=tblogdir)
 
     
+    
     train_dataset = config.get_dataset('train', cfg)
     val_dataset = config.get_dataset('val', cfg)
 

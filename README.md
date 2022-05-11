@@ -11,6 +11,9 @@ The code is largely based on the [original repository](https://github.com/autono
 
 The data used in this repository can be downloaded [here](https://github.com/raphaelsulzer/dsrv-data).
 
+The pretrained models can be downloaded with:
+
+`bash scripts/download_pretrained.sh`
 
 # Reconstruction
 

@@ -52,7 +52,7 @@ train:
   batch_size: 8
   lr: 5e-4
 #  out_dir: /home/rsulzer/data/ModelNet10_out/sap/scan43/conventional
-  out_dir: /mnt/raphael/ShapeNet_out/sap/svn
+  out_dir: /mnt/raphael/ShapeNet_out/sap/paper/SV
   load_model: model_best
   w_psr: 1
   model_selection_metric: psr_l2
