@@ -19,8 +19,8 @@ data:
 sensor:
   mode: norm+   # uniform sampling at mean_neighborhood*[-2 -1 1 2] + 1 non-uniform outside sample per point = closest sample point of any other LOS
   vector: sensor
-  stepsi: [-2, -1]
-  stepso: [ 1, 2, 4 ]
+  stepsi: [-1]
+  stepso: [ 1]
   sampling: uniform
   factor: neighborhood # or neighborhood
   ident_dim: 2
@@ -51,7 +51,7 @@ model:
 train:
   batch_size: 8
   lr: 5e-4
-  out_dir: /mnt/raphael/ShapeNet_out/sap/uniform_neighborhood_5
+  out_dir: /mnt/raphael/ShapeNet_out/sap/paper/AP
   load_model: model_best
   w_psr: 1
   model_selection_metric: psr_l2

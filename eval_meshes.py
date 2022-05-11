@@ -50,6 +50,8 @@ def main():
         'idx': IndexField(),
     }
 
+
+
     print('Test split: ', cfg['data']['test_split'])
 
     dataset_folder = cfg['data']['path']

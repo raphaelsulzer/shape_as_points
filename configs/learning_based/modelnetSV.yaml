@@ -1,7 +1,7 @@
 data:
-  class: ["toilet","bed"]
+  class: null
   dataset: ModelNet10
-  scan: 42
+  scan: 43
   dim: 3
   data_type: psr_full
   input_type: pointcloud
@@ -50,7 +50,7 @@ train:
   batch_size: 16
   lr: 5e-4
 #  out_dir: /home/rsulzer/data/ModelNet10_out/sap/scan43/norm+
-  out_dir: /mnt/raphael/ModelNet10_out/sap/scan42/svn
+  out_dir: /mnt/raphael/ModelNet10_out/sap/paper/SV
   load_model: model_best
   w_psr: 1
   model_selection_metric: psr_l2
