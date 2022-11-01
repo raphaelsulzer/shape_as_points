@@ -1,7 +1,8 @@
 data:
-  class: null
+  class: ["02691156"]
   dataset: ShapeNet
   transform: 0
+  augmentation: 0
   scan: 4
   dim: 3
   data_type: psr_full

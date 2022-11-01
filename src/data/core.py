@@ -4,6 +4,7 @@ from torch.utils import data
 from pdb import set_trace as st
 import numpy as np
 import yaml
+import trimesh.transformations as trafo
 
 
 logger = logging.getLogger(__name__)
@@ -38,7 +39,7 @@ class Shapes3dDataset(data.Dataset):
     '''
 
     def __init__(self, dataset_folder, fields, split=None,
-                 categories=None, no_except=True, transform=None, cfg=None):
+                 categories=None, no_except=False, transform=None, cfg=None):
         ''' Initialization of the the 3D shape dataset.
 
         Args:
@@ -57,16 +58,16 @@ class Shapes3dDataset(data.Dataset):
         self.transform = transform
         self.cfg = cfg
 
-        # If categories is None, use all subfolders
         if categories is None:
-            categories = os.listdir(dataset_folder)
-            categories = [c for c in categories
-                          if os.path.isdir(os.path.join(dataset_folder, c))]
+            with open(os.path.join(dataset_folder,"classes.lst"), 'r') as f:
+                categories = f.read().split('\n')
+            if '' in categories:
+                categories.remove('')
+            # categories = os.listdir(dataset_folder)
+            # categories = [c for c in categories
+            #               if os.path.isdir(os.path.join(dataset_folder, c))]
 
-        if categories[0] != 'x':
-            if 'x' in categories: categories.remove('x')
-        if categories[0] != 'real':
-            if 'real' in categories: categories.remove('real')
+
         # Read metadata file
         metadata_file = os.path.join(dataset_folder, 'metadata.yaml')
 
@@ -90,14 +91,20 @@ class Shapes3dDataset(data.Dataset):
                 logger.warning('Category %s does not exist in dataset.' % c)
 
             if split is None:
+                # mainly for reconbench dataset
                 self.models += [
-                    {'category': c, 'model': m} for m in [d for d in os.listdir(subpath) if (os.path.isdir(os.path.join(subpath, d)) and d != '') ]
+                    {'category': c, 'model': c}
                 ]
+                # self.models += [
+                #     {'category': c, 'model': m} for m in [d for d in os.listdir(subpath) if (os.path.isdir(os.path.join(subpath, d)) and d != '') ]
+                # ]
 
             else:
                 split_file = os.path.join(subpath, split + '.lst')
                 with open(split_file, 'r') as f:
                     models_c = f.read().split('\n')
+
+                # models_c = models_c[:5]
                 
                 if '' in models_c:
                     models_c.remove('')
@@ -127,7 +134,6 @@ class Shapes3dDataset(data.Dataset):
         c_idx = self.metadata[category]['idx']
 
         # model_path = os.path.join(self.dataset_folder, category, model)
-        scan_conf = str(self.cfg['data']['scan'])
         data = {}
 
         info = c_idx
@@ -137,32 +143,42 @@ class Shapes3dDataset(data.Dataset):
             if self.split != 'train':
                 idx = 0
 
+        # make a random rotation matrix
+        if self.cfg['data']['augmentation']:
+            # random rotation of shape and patch as data augmentation
+            rand_rot = trafo.random_rotation_matrix(np.random.rand(3))
+        else:
+            rand_rot = None
+
         for field_name, field in self.fields.items():
             # print(field,field_name)
             if(field_name == "gt_points" or field_name == "occupancies"):
-                if(self.cfg["data"]["dataset"] == "ModelNet10"):
-                    model_path = os.path.join(self.dataset_folder, category, "eval", model)
+                if(self.cfg["data"]["dataset"] == "reconbench"):
+                    model_path = os.path.join(self.dataset_folder, "eval", model)
                 else:
                     model_path = os.path.join(self.dataset_folder, category, model, "eval")
             elif(field_name == "gt_psr"):
-                model_path = os.path.join(self.dataset_folder, category, "sap", model)
+                if(self.cfg["data"]["dataset"] == "reconbench"):
+                    model_path = os.path.join(self.dataset_folder, "sap", model)
+                else:
+                    model_path = os.path.join(self.dataset_folder, category, model, "psr")
             else:
-                if(self.cfg["data"]["dataset"] == "ModelNet10"):
-                    model_path = os.path.join(self.dataset_folder, category, "scan", scan_conf, model)
+                if(self.cfg["data"]["dataset"] == "reconbench"):
+                    model_path = os.path.join(self.dataset_folder, "scan", model)
                 else:
                     model_path = os.path.join(self.dataset_folder, category, model, "scan")
 
-            # try:
-            field_data = field.load(model_path, idx, info)
-            # except Exception:
-            #     if self.no_except:
-            #         logger.warn(
-            #             'Error occured when loading field %s of model %s %s'
-            #             % (field_name, category, model)
-            #         )
-            #         return None
-            #     else:
-            #         raise
+            try:
+                field_data = field.load(model_path, idx, info, rand_rot)
+            except Exception:
+                if self.no_except:
+                    logger.warn(
+                        'Error occured when loading field %s of model %s %s'
+                        % (field_name, category, model)
+                    )
+                    return None
+                else:
+                    raise
 
             if isinstance(field_data, dict):
                 for k, v in field_data.items():

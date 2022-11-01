@@ -8,11 +8,12 @@ import trimesh
 from src.data.core import Field
 from pdb import set_trace as st
 from src.data.add_sensor import *
-
+import trimesh.transformations as trafo
+from scipy.interpolate import RegularGridInterpolator
 
 class IndexField(Field):
     ''' Basic index field.'''
-    def load(self, model_path, idx, category):
+    def load(self, model_path, idx, category, rand_rot):
         ''' Loads the index field.
 
         Args:
@@ -36,7 +37,7 @@ class FullPSRField(Field):
         # self.unpackbits = unpackbits
         self.multi_files = multi_files
     
-    def load(self, model_path, idx, category):
+    def load(self, model_path, idx, category, rand_rot=None):
 
         # try:
         # t0 = time.time()
@@ -54,6 +55,38 @@ class FullPSRField(Field):
         
         if self.transform is not None:
             data = self.transform(data)
+
+        # TODO: even here I should apply rand_rot!
+        # could maybe be done with this: https://medium.com/vitrox-publication/rotation-of-voxels-in-3d-space-using-python-c3b2fc0afda1
+
+        if (rand_rot is not None):
+            trans_mat_inv = np.linalg.inv(rand_rot)
+            Nz, Ny, Nx = data[None].shape
+            x = np.linspace(0, Nx - 1, Nx)
+            y = np.linspace(0, Ny - 1, Ny)
+            z = np.linspace(0, Nz - 1, Nz)
+            zz, yy, xx = np.meshgrid(z, y, x, indexing='ij')
+            coor = np.array([xx, yy, zz])
+            coor_prime = np.tensordot(trans_mat_inv, coor, axes=((1), (0)))
+            xx_prime = coor_prime[0]
+            yy_prime = coor_prime[1]
+            zz_prime = coor_prime[2]
+            x_valid1 = xx_prime >= 0
+            x_valid2 = xx_prime <= Nx - 1
+            y_valid1 = yy_prime >= 0
+            y_valid2 = yy_prime <= Ny - 1
+            z_valid1 = zz_prime >= 0
+            z_valid2 = zz_prime <= Nz - 1
+            valid_voxel = x_valid1 * x_valid2 * y_valid1 * y_valid2 * z_valid1 * z_valid2
+            z_valid_idx, y_valid_idx, x_valid_idx = np.where(valid_voxel > 0)
+            image_transformed = np.zeros((Nz, Ny, Nx))
+
+            data_w_coor = RegularGridInterpolator((z, y, x), data[None])
+            interp_points = np.array([zz_prime[z_valid_idx, y_valid_idx, x_valid_idx],
+                                         yy_prime[z_valid_idx, y_valid_idx, x_valid_idx],
+                                         xx_prime[z_valid_idx, y_valid_idx, x_valid_idx]]).T
+            interp_result = data_w_coor(interp_points)
+            data[None][z_valid_idx, y_valid_idx, x_valid_idx] = interp_result
 
         return data
 
@@ -80,7 +113,7 @@ class PointCloudField(Field):
         self.cfg = cfg
 
 
-    def load(self, model_path, idx, category):
+    def load(self, model_path, idx, category, rand_rot):
         ''' Loads the data point.
 
         Args:
@@ -116,6 +149,15 @@ class PointCloudField(Field):
                 data['gt_normals']=np.matmul(data["gt_normals"],R)
             if("sensors" in data):
                 data['sensors']=np.matmul(data["sensors"],R)
+
+        if (self.cfg["data"]["augmentation"]):
+            data[None][:, :3]=trafo.transform_points(data[None][:, :3], rand_rot).astype(np.float32)
+            data['normals']=trafo.transform_points(data["normals"], rand_rot).astype(np.float32)
+            if("gt_normals" in data):
+                data['gt_normals']=trafo.transform_points(data["gt_normals"], rand_rot).astype(np.float32)
+            if("sensors" in data):
+                data['sensors']=trafo.transform_points(data["sensors"], rand_rot).astype(np.float32)
+
 
         if self.transform is not None:
             data = self.transform(data)
@@ -164,7 +206,7 @@ class PointsField(Field):
         self.multi_files = multi_files
         self.cfg=cfg
 
-    def load(self, model_path, idx, category):
+    def load(self, model_path, idx, category, rand_rot):
         ''' Loads the data point.
 
         Args:
@@ -186,6 +228,8 @@ class PointsField(Field):
             R=np.array([[-1, 0, 0], [0, 0, 1], [0, 1, 0]],dtype=np.float32)
             points=np.matmul(points,R)
 
+        if (self.cfg["data"]["augmentation"]):
+            points = trafo.transform_points(points, rand_rot).astype(np.float32)
 
         #
         # Break symmetry if given in float16:

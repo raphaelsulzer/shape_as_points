@@ -63,7 +63,7 @@ def get_dataset(mode, cfg, return_idx=False):
     split = splits[mode]
 
     # Create dataset
-    if dataset_type == 'ShapeNet' or dataset_type == 'ModelNet10' or dataset_type == 'eth':
+    if dataset_type == 'ShapeNet' or dataset_type == 'ModelNet10' or dataset_type == 'eth' or dataset_type == 'reconbench':
         fields = get_data_fields(mode, cfg)
         # Input fields
         inputs_field = get_inputs_field(mode, cfg)

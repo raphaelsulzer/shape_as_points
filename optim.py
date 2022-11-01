@@ -18,12 +18,21 @@ from pytorch3d.ops import sample_points_from_meshes
 from pytorch3d.io import load_objs_as_meshes
 from pytorch3d.structures import Meshes
 
+import sys,os
 
-def main():
+sys.path.append(os.path.join(os.path.dirname(__file__),"..","benchmark","datasets"))
+from modelnet10 import ModelNet10
+from shapenet import ShapeNet
+from berger import Berger
+
+
+
+def main(data_path,out_dir):
     parser = argparse.ArgumentParser(description='MNIST toy experiment')
     parser.add_argument('config', type=str, help='Path to config file.')
     parser.add_argument('--no_cuda', action='store_true', default=False,
-                        help='disables CUDA training')    
+                        help='disables CUDA training')
+    parser.add_argument("--gpu", type=str, help="which gpu", default="0")
     parser.add_argument('--seed', type=int, default=1457, metavar='S', 
                         help='random seed')
     
@@ -33,7 +42,9 @@ def main():
     use_cuda = not args.no_cuda and torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
     data_type = cfg['data']['data_type']
-    data_class = cfg['data']['class']
+
+    cfg['train']['out_dir'] = out_dir
+
 
     print(cfg['train']['out_dir'])
 
@@ -65,13 +76,13 @@ def main():
 
     # initialize dataset
     if data_type == 'point':
-        if cfg['data']['object_id'] != -1:
-            data_paths = sorted(glob.glob(cfg['data']['data_path']))
-            data_path = data_paths[cfg['data']['object_id']]
-            print('Loaded %d/%d object' % (cfg['data']['object_id']+1, len(data_paths)))
-        else:
-            data_path = cfg['data']['data_path']
-            print('Data loaded')
+        # if cfg['data']['object_id'] != -1:
+        #     data_paths = sorted(glob.glob(cfg['data']['data_path']))
+        #     data_path = data_paths[cfg['data']['object_id']]
+        #     print('Loaded %d/%d object' % (cfg['data']['object_id']+1, len(data_paths)))
+        # else:
+        #     data_path = cfg['data']['data_path']
+        #     print('Data loaded')
         ext = data_path.split('.')[-1]
         if ext == 'obj': # have GT mesh
             mesh = load_objs_as_meshes([data_path], device=device)
@@ -312,4 +323,14 @@ def main():
         print('Video saved.')
 
 if __name__ == '__main__':
-    main()
+
+    dataset = Berger()
+    models = dataset.getModels(scan_conf=["mvs4"])
+    outpath = "/mnt/raphael/reconbench_out/mvs/sap/"
+
+    for m in models:
+
+        data_path = m["scan_ply"]
+        cpath = os.path.join(outpath,m["scan_conf"],m["model"])
+        os.makedirs(cpath,exist_ok=True)
+        main(data_path,cpath)

@@ -25,7 +25,6 @@ def main():
     parser.add_argument('--seed', type=int, default=1, metavar='S', help='random seed (default: 1)')
     parser.add_argument('--iter', type=int, metavar='S', help='the training iteration to be evaluated.')
     parser.add_argument('--gpu', type=str, help='which gpu to use.')
-
     
     args = parser.parse_args()
     cfg = load_config(args.config, 'configs/default.yaml')
@@ -84,10 +83,6 @@ def main():
 
     # Generate
     model.eval()
-    dpsr = DPSR(res=(cfg['generation']['psr_resolution'], 
-                     cfg['generation']['psr_resolution'], 
-                     cfg['generation']['psr_resolution']), 
-                sig= cfg['generation']['psr_sigma']).to(device)
 
     
 
@@ -97,7 +92,6 @@ def main():
 
 
     print('Generating...')
-    iou = []
     for it, data in enumerate(tqdm(test_loader)):
 
         # Output folders
@@ -234,21 +228,26 @@ def main():
     time_df = pd.DataFrame(time_dicts)
     time_df.set_index(['idx'], inplace=True)
     time_df.to_pickle(out_time_file)
+    time_df_class = time_df.groupby(by=['class name']).mean()
 
     iou_df = time_df
     iou_df = iou_df.drop(columns=['pcl', 'dpsr', 'mc', 'total'])
     iou_df.to_pickle(os.path.join(out_dir, 'iou_all_'+cfg['data']['dataset']+'.pkl'))
 
     # Create pickle files  with main statistics
-    time_df_class = time_df.groupby(by=['class name']).mean()
-    time_df_class.loc['mean'] = time_df_class.mean()
-    time_df_class.to_csv(os.path.join(out_dir, 'iou_class_' + cfg['data']['dataset'] + '.csv'))
+    iou_df_class = iou_df.groupby(by=['class name']).mean()
+    iou_df_class.loc['mean'] = iou_df.mean()
+    iou_df_class.to_csv(os.path.join(out_dir, 'iou_class_' + cfg['data']['dataset'] + '.csv'))
     print("export results to ", os.path.join(out_dir, 'iou_class_' + cfg['data']['dataset'] + '.csv'))
 
     # Print results
+    print('IoU:')
+    print(iou_df_class)
+
     print('Timings [s]:')
     print(time_df_class)
-    print(iou_df)
+
+    # print(iou_df)
     # print("Mean IoU ",np.array(iou).mean())
 
 if __name__ == '__main__':

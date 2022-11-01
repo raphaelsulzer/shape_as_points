@@ -2,7 +2,7 @@ data:
   class: 'only_pcl'
   data_type: point
   data_path: 'data/deep_geometric_prior_data/anchor.ply'
-  object_id: 0
+  object_id: -1
   num_points: 20000
 model:
   sphere_radius: 0.2

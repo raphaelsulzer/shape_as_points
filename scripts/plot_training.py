@@ -1,10 +1,9 @@
 import matplotlib.pyplot as plt
-import os
+import os, subprocess
 import pandas as pd
-import numpy as np
-import subprocess
 
-data_path = "/mnt/raphael/ModelNet10_out/sap/scan43"
+
+data_path = "/mnt/raphael/ShapeNet_out/sap/benchmark"
 # data_path = "/home/rsulzer/data/ModelNet10_out/sap/scan43"
 
 # methods =["sensor_2_2", "mean_neighborhood_one", "mean_neighborhood_uniform_4", "scan41", "scan421", "scan421_normal"]
@@ -17,10 +16,10 @@ data_path = "/mnt/raphael/ModelNet10_out/sap/scan43"
 
 ## best
 
-a = 30
-b = 200
+a = 0
+b = 10000
 
-methods = ["conventional","sensor_vec_norm","norm+"]
+methods = ["tr"]
 
 plt.figure("Loss")
 plt.figure("IoU")
@@ -29,7 +28,12 @@ colors = ["r","g","b","k"]
 
 for i,m in enumerate(methods):
 
-    file = os.path.join(data_path, m, 'metrics',"results.csv")
+    command = ["scp", "enpc:"+str(os.path.join(data_path, m, 'metrics',"results.csv")), "."]
+    print(*command)
+    p = subprocess.Popen(command)
+    p.wait()
+
+    file = "./results.csv"
     df = pd.read_csv(file, sep=',', header=0)
     loss_train = df["train_loss"].values
     loss_test = df["test_loss"].values
@@ -49,8 +53,6 @@ for i,m in enumerate(methods):
     iou = iou[a:b]
 
     plt.figure("Loss")
-    # plt.plot(its,train_loss_cl,':',color=colors[i])
-    # plt.plot(its,loss_reg,'--',color=colors[i])
     plt.plot(its,loss_train,'-',color=colors[i])
     plt.plot(its,loss_test,'--',color=colors[i])
     plt.figure("IoU")
@@ -59,26 +61,14 @@ for i,m in enumerate(methods):
 
 plt.figure("Loss")
 plt.grid()
-# l = ["train_loss","test_loss"]
-# legend = ["conventional_"+l[0],"conventional_"+l[1]]
 plt.legend(methods)
 plt.xlabel("Training Iterations")
 plt.ylabel("Loss")
-plt.savefig(os.path.join(data_path, 'train_loss.png'),dpi=200)
+plt.savefig('./train_loss.png',dpi=200)
 
 plt.figure("IoU")
 plt.grid()
-# plt.legend(methods)
-# plt.legend(["conventional","sensor_vec","sensor_aux_grid","sensor_aux_uniform"])
 plt.legend(methods)
 plt.xlabel("Training Iterations")
-plt.ylabel("Validation IoU")
-plt.savefig(os.path.join(data_path, 'validation_iou.png'),dpi=200)
-
-# scp the plots
-# command = ["scp","biom:",os.path.join(data_path, 'train_loss.png'),"/home/adminlocal/PhD/data/ModelNet/sap"]
-# p = subprocess.Popen(command)
-# p.wait()
-# command = ["scp","biom:",os.path.join(data_path, 'validation_iou.png'),"/home/adminlocal/PhD/data/ModelNet/sap"]
-# p = subprocess.Popen(command)
-# p.wait()
+plt.ylabel("IoU")
+plt.savefig('./validation_iou.png',dpi=200)

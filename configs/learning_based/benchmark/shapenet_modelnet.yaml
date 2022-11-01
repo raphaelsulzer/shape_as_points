@@ -1,14 +1,13 @@
 data:
-  class: null
-  dataset: ShapeNet
+  class: ["bathtub",  "bed",  "desk",  "dresser",  "nightstand",  "toilet"]
+  dataset: ModelNet10
   transform: 0
   augmentation: 0
-  scan: 4
   dim: 3
   data_type: psr_full
   input_type: pointcloud
-  path: /mnt/raphael/ShapeNet
-  pointcloud_file: pointcloud.npz
+  path: /mnt/raphael/ModelNet10
+  pointcloud_file: 43.npz
   num_gt_points: 10000
   num_offset: 7
   pointcloud_n: null
@@ -16,7 +15,7 @@ data:
   pointcloud_outlier_ratio: null
   train_split: train
   val_split: test
-  test_split: test10
+  test_split: test
 sensor:
   mode: null   # uniform sampling at mean_neighborhood*[-2 -1 1 2] + 1 non-uniform outside sample per point = closest sample point of any other LOS
   vector: null
@@ -56,14 +55,14 @@ train:
   load_model: model_best
   w_psr: 1
   model_selection_metric: psr_l2
-  print_every: 100
-  checkpoint_every: 1000
-  validate_every: 1000
+  print_every: 1000
+  checkpoint_every: 10000
+  validate_every: 10000
   backup_every: 10000
   total_epochs: 400000
   visualize_every: 500000
   exp_pcl: True
-  exp_mesh: True
+  exp_mesh: False
   n_workers: 4
   n_workers_val: 4
 generation:
@@ -72,11 +71,11 @@ generation:
   exp_oracle: False
   exp_input: False
   exp_mesh: True
-  vis_n_outputs: 10000
+  vis_n_outputs: 1000000
   generate_mesh: True
   generate_pointcloud: False
-  generation_dir: generation
   copy_input: False
   use_sampling: false
   psr_resolution: 128
   psr_sigma: 2
+  generation_dir: modelnet
