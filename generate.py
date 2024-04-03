@@ -24,7 +24,7 @@ def main():
                         help='disables CUDA training')    
     parser.add_argument('--seed', type=int, default=1, metavar='S', help='random seed (default: 1)')
     parser.add_argument('--iter', type=int, metavar='S', help='the training iteration to be evaluated.')
-    parser.add_argument('--gpu', type=str, help='which gpu to use.')
+    parser.add_argument('--gpu', type=str, default="0", help='which gpu to use.')
     
     args = parser.parse_args()
     cfg = load_config(args.config, 'configs/default.yaml')

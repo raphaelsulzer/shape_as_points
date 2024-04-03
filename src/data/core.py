@@ -155,6 +155,8 @@ class Shapes3dDataset(data.Dataset):
             if(field_name == "gt_points" or field_name == "occupancies"):
                 if(self.cfg["data"]["dataset"] == "reconbench"):
                     model_path = os.path.join(self.dataset_folder, "eval", model)
+                elif(self.cfg["data"]["dataset"] == "real"):
+                    model_path = os.path.join(self.dataset_folder, "..", "eval", model)
                 else:
                     model_path = os.path.join(self.dataset_folder, category, model, "eval")
             elif(field_name == "gt_psr"):
@@ -165,11 +167,13 @@ class Shapes3dDataset(data.Dataset):
             else:
                 if(self.cfg["data"]["dataset"] == "reconbench"):
                     model_path = os.path.join(self.dataset_folder, "scan", model)
+                elif(self.cfg["data"]["dataset"] == "real"):
+                    model_path = os.path.join(self.dataset_folder, category, model, "scan")
                 else:
                     model_path = os.path.join(self.dataset_folder, category, model, "scan")
 
             try:
-                field_data = field.load(model_path, idx, info, rand_rot)
+                field_data = field.load(model_path, idx, info)
             except Exception:
                 if self.no_except:
                     logger.warn(

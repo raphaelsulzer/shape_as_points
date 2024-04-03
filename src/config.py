@@ -63,24 +63,21 @@ def get_dataset(mode, cfg, return_idx=False):
     split = splits[mode]
 
     # Create dataset
-    if dataset_type == 'ShapeNet' or dataset_type == 'ModelNet10' or dataset_type == 'eth' or dataset_type == 'reconbench':
-        fields = get_data_fields(mode, cfg)
-        # Input fields
-        inputs_field = get_inputs_field(mode, cfg)
-        if inputs_field is not None:
-            fields['inputs'] = inputs_field
+    fields = get_data_fields(mode, cfg)
+    # Input fields
+    inputs_field = get_inputs_field(mode, cfg)
+    if inputs_field is not None:
+        fields['inputs'] = inputs_field
 
-        if return_idx:
-            fields['idx'] = data.IndexField()
+    if return_idx:
+        fields['idx'] = data.IndexField()
 
-        dataset = data.Shapes3dDataset(
-            dataset_folder, fields,
-            split=split,
-            categories=categories,
-            cfg = cfg
-        )
-    else:
-        raise ValueError('Invalid dataset "%s"' % cfg['data']['dataset'])
+    dataset = data.Shapes3dDataset(
+        dataset_folder, fields,
+        split=split,
+        categories=categories,
+        cfg = cfg
+    )
  
     return dataset
 

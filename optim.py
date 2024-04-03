@@ -24,7 +24,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__),"..","benchmark","dataset
 from modelnet10 import ModelNet10
 from shapenet import ShapeNet
 from berger import Berger
-
+from real import Real
 
 
 def main(data_path,out_dir):
@@ -324,13 +324,13 @@ def main(data_path,out_dir):
 
 if __name__ == '__main__':
 
-    dataset = Berger()
-    models = dataset.getModels(scan_conf=["mvs4"])
-    outpath = "/mnt/raphael/reconbench_out/mvs/sap/"
+    dataset = Real(classes=["50000"])
+    models = dataset.getModels()
+    outpath = os.path.join(dataset.outpath,"sap_optim")
 
     for m in models:
 
         data_path = m["scan_ply"]
-        cpath = os.path.join(outpath,m["scan_conf"],m["model"])
+        cpath = os.path.join(outpath,m["class"],m["model"])
         os.makedirs(cpath,exist_ok=True)
         main(data_path,cpath)
